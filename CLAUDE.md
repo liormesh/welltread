@@ -6,30 +6,30 @@ Personalized movement programs. Multi-niche mobility platform delivered via quiz
 
 ## Stack
 
-- **Next.js 16** (App Router, React 19, TypeScript) — heed AGENTS.md re: breaking changes
+- **Next.js 16** (App Router, React 19, TypeScript) - heed AGENTS.md re: breaking changes
 - **Tailwind v4** (CSS-first via `@theme` in `globals.css`)
 - **Cloudflare Workers** deploy via `@opennextjs/cloudflare`
-- **Supabase** (welltread project — to be created) for data, auth, email capture
+- **Supabase** (welltread project - to be created) for data, auth, email capture
 - **Stripe** for paywall (test mode until we go live)
 - **GitHub Actions** auto-deploy on push to main
 
 ## Repo conventions
 
-- `src/app/` — App Router routes
-- `src/app/<niche>/page.tsx` — niche-specific LP (current: `seniors`, `posture`)
-- `src/app/api/<endpoint>/route.ts` — API routes (Edge runtime)
-- `src/components/` — shared UI
-- `.kb/` — brand kit, copy bible, design tokens reference (read this first when working on UI/copy)
-- `wrangler.jsonc` — CF Workers deploy config; routes both `welltread.co` and `welltread.app`
-- `.github/workflows/deploy.yml` — push to main → build → wrangler deploy
+- `src/app/` - App Router routes
+- `src/app/<niche>/page.tsx` - niche-specific LP (current: `seniors`, `posture`)
+- `src/app/api/<endpoint>/route.ts` - API routes (Edge runtime)
+- `src/components/` - shared UI
+- `.kb/` - brand kit, copy bible, design tokens reference (read this first when working on UI/copy)
+- `wrangler.jsonc` - CF Workers deploy config; routes both `welltread.co` and `welltread.app`
+- `.github/workflows/deploy.yml` - push to main → build → wrangler deploy
 
 ## Project rules (inherited from user globals)
 
-- **No custom fonts** — system-font stack only. Don't add `next/font/google` imports.
-- **Deploy via GitHub** — never `wrangler deploy` from local. Push to main.
-- **Brand kit is canonical** — see `.kb/brand.md` before writing UI copy or styling.
+- **No custom fonts** - system-font stack only. Don't add `next/font/google` imports.
+- **Deploy via GitHub** - never `wrangler deploy` from local. Push to main.
+- **Brand kit is canonical** - see `.kb/brand.md` before writing UI copy or styling.
 - **Tone:** clinical-warm. Calm, grounded, no hype. See voice samples in brand kit.
-- **No medical claims** — lifestyle positioning only. Read the relevant niche sections of brand kit before writing copy.
+- **No medical claims** - lifestyle positioning only. Read the relevant niche sections of brand kit before writing copy.
 
 ## Brand tokens (Tailwind v4 `@theme`)
 
@@ -41,8 +41,8 @@ Defined in `src/app/globals.css`. Use the semantic class names:
 
 ## Domains
 
-- **welltread.co** — primary marketing + LP + quiz + paywall
-- **welltread.app** — future authenticated app subdomain (currently mirrors `.co` via same Worker)
+- **welltread.co** - primary marketing + LP + quiz + paywall
+- **welltread.app** - future authenticated app subdomain (currently mirrors `.co` via same Worker)
 
 ## Active niches
 

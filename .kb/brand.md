@@ -1,4 +1,4 @@
-# Welltread — Brand Kit
+# Welltread - Brand Kit
 
 > Living document. Update as the brand evolves.
 
@@ -18,11 +18,11 @@
 | **Length** | Short sentences. Concrete nouns. | Marketing run-ons |
 | **Authority** | Earned ("we know what works") | Borrowed ("studies show") |
 | **Promise shape** | Realistic ranges, honest tradeoffs | Guaranteed transformations |
-| **Reader address** | "You" — direct, respectful | "Folks," "ya'll," "buddy" |
+| **Reader address** | "You" - direct, respectful | "Folks," "ya'll," "buddy" |
 
 **Three voice samples:**
 1. *"You used to move. Let&rsquo;s start there."*
-2. *"Welltread builds personalized movement programs for the body you have today &mdash; not the one you used to have."*
+2. *"Welltread builds personalized movement programs for the body you have today - not the one you used to have."*
 3. *"Small movements, sustainable progress. We adapt as you do."*
 
 ## Visual
@@ -30,7 +30,7 @@
 ### Palette
 | Token | Hex | Use |
 |---|---|---|
-| `--color-paper` | `#FAF7F2` | Default background — warm off-white, paper-like |
+| `--color-paper` | `#FAF7F2` | Default background - warm off-white, paper-like |
 | `--color-paper-warm` | `#F2EAD3` | Section accent backgrounds |
 | `--color-paper-deep` | `#EBE2C9` | Tertiary surface |
 | `--color-sage` | `#2D4F4A` | Primary brand. Buttons, headlines accent, links |
@@ -43,7 +43,7 @@
 | `--color-line` | `#E6DFCF` | Borders, dividers |
 
 ### Typography
-**System fonts only** — no custom fonts (project rule).
+**System fonts only** - no custom fonts (project rule).
 
 ```css
 --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
@@ -60,12 +60,12 @@
 - Generous whitespace. No dense sections.
 - Max content width: 1152px (`max-w-6xl`). Hero text often narrower (`max-w-4xl`).
 - Border radius: 1rem (`rounded-2xl`) for inputs and buttons; 1.5rem (`rounded-3xl`) for cards.
-- Shadow used sparingly &mdash; hover reveal only.
+- Shadow used sparingly - hover reveal only.
 
 ### Photography (when added)
 - Real people, not models. Real environments, not studios.
 - Natural light. Composition leans documentary, not commercial.
-- Across age range (40s, 60s, 70s, postpartum bodies) — match niche.
+- Across age range (40s, 60s, 70s, postpartum bodies) - match niche.
 - Avoid: gym aesthetics, athleisure-product placement, transformation-photo grids.
 
 ## Niches

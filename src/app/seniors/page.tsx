@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { EmailCapture } from "@/components/EmailCapture";
 
 export const metadata = {
-  title: "Senior Mobility — Welltread",
+  title: "Senior Mobility - Welltread",
   description:
     "Personalized movement programs for adults 60+. Balance, fall prevention, gentle strength. Built for confidence, not aesthetics.",
 };
@@ -25,7 +25,7 @@ export default function Seniors() {
           <p className="mt-8 text-xl text-ink-soft max-w-2xl leading-relaxed">
             Welltread&rsquo;s senior program is built around the things that
             matter most: balance you can trust, strength that protects you,
-            and movements that fit your day &mdash; not someone else&rsquo;s.
+            and movements that fit your day - not someone else&rsquo;s.
           </p>
         </section>
 
@@ -40,7 +40,7 @@ export default function Seniors() {
             />
             <Pain
               title="Strength that protects"
-              body="Functional strength to keep you independent. Not bulk &mdash; just what your body needs to keep doing its work."
+              body="Functional strength to keep you independent. Not bulk - just what your body needs to keep doing its work."
             />
             <Pain
               title="Gentle on what hurts"

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Welltread brand tokens — clinical-warm */
+  /* Welltread brand tokens - clinical-warm */
   --color-ink: #1a1a1a;
   --color-ink-soft: #4b5152;
   --color-paper: #faf7f2;

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Welltread — every step considered",
+  title: "Welltread - every step considered",
   description:
     "Personalized movement programs for the body you have today. Built for seniors regaining balance, men 40+ undoing desk-job posture, and bodies recovering from change.",
   metadataBase: new URL("https://welltread.co"),

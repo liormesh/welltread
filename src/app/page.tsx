@@ -22,7 +22,7 @@ export default function Home() {
           </h1>
           <p className="mt-8 text-xl text-ink-soft max-w-2xl leading-relaxed">
             Welltread builds personalized movement programs for the body you
-            have today &mdash; not the one you used to have. Pick the path that
+            have today - not the one you used to have. Pick the path that
             fits.
           </p>
 
@@ -31,7 +31,7 @@ export default function Home() {
               href="/seniors"
               eyebrow="60+"
               title="Senior Mobility"
-              body="Balance, fall prevention, gentle strength &mdash; built for confidence."
+              body="Balance, fall prevention, gentle strength - built for confidence."
             />
             <NicheCard
               href="/posture"
@@ -57,7 +57,7 @@ export default function Home() {
               <Step
                 n="02"
                 title="Your personalized plan"
-                body="A 12-week program tailored to where you are &mdash; not a generic routine."
+                body="A 12-week program tailored to where you are - not a generic routine."
               />
               <Step
                 n="03"

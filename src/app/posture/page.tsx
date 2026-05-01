@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { EmailCapture } from "@/components/EmailCapture";
 
 export const metadata = {
-  title: "Posture & Back, 40+ — Welltread",
+  title: "Posture & Back, 40+ - Welltread",
   description:
     "Personalized movement programs for desk-job men 40+. Undo years of stiffness. Real strength, real energy, real schedule.",
 };
@@ -24,7 +24,7 @@ export default function Posture() {
             Let&rsquo;s start there.
           </h1>
           <p className="mt-8 text-xl text-ink-soft max-w-2xl leading-relaxed">
-            Years at a desk leave a mark &mdash; tight hips, locked-up
+            Years at a desk leave a mark - tight hips, locked-up
             shoulders, a back that complains by 4pm. Welltread builds you a
             12-week program that actually fits a working life.
           </p>
@@ -37,7 +37,7 @@ export default function Posture() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
             <Pain
               title="The 4pm back ache"
-              body="Mobility work that targets the actual cause &mdash; not a generic stretching routine."
+              body="Mobility work that targets the actual cause - not a generic stretching routine."
             />
             <Pain
               title="Forward-shoulder posture"
@@ -61,7 +61,7 @@ export default function Posture() {
             </h2>
             <p className="mt-4 text-lg text-ink-soft max-w-lg mx-auto">
               Drop your email. We&rsquo;ll send your assessment when
-              we&rsquo;re ready &mdash; not before.
+              we&rsquo;re ready - not before.
             </p>
             <div className="mt-10 max-w-md mx-auto">
               <EmailCapture source="posture" ctaLabel="Get the assessment" />

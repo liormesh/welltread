@@ -8,8 +8,8 @@ Currently in pre-launch. Two niche LPs live: Senior Mobility (60+), Posture & Ba
 
 ## Live
 
-- [welltread.co](https://welltread.co) — primary brand
-- [welltread.app](https://welltread.app) — currently mirrors `.co`; reserved for the future authenticated product subdomain
+- [welltread.co](https://welltread.co) - primary brand
+- [welltread.app](https://welltread.app) - currently mirrors `.co`; reserved for the future authenticated product subdomain
 
 ## Stack
 
@@ -38,9 +38,9 @@ npm run preview:cloudflare
 
 ## Repo guide
 
-- [`CLAUDE.md`](./CLAUDE.md) — agent guidance for working in this repo
-- [`.kb/brand.md`](./.kb/brand.md) — brand kit, voice, palette, niches
-- `src/app/` — routes
-- `src/components/` — shared UI
-- `wrangler.jsonc` — CF deploy config
-- `.github/workflows/deploy.yml` — CI/CD
+- [`CLAUDE.md`](./CLAUDE.md) - agent guidance for working in this repo
+- [`.kb/brand.md`](./.kb/brand.md) - brand kit, voice, palette, niches
+- `src/app/` - routes
+- `src/components/` - shared UI
+- `wrangler.jsonc` - CF deploy config
+- `.github/workflows/deploy.yml` - CI/CD
