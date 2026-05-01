@@ -28,17 +28,25 @@ export default function Home() {
 
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
             <NicheCard
-              href="/seniors"
+              href="/quiz?source=seniors"
               eyebrow="60+"
               title="Senior Mobility"
               body="Balance, fall prevention, gentle strength - built for confidence."
             />
             <NicheCard
-              href="/posture"
+              href="/quiz?source=posture"
               eyebrow="40+"
               title="Posture &amp; Back"
               body="Undo years of desk-job stiffness. Energy, posture, movement."
             />
+          </div>
+          <div className="mt-8">
+            <Link
+              href="/quiz"
+              className="inline-block px-7 h-12 leading-[3rem] rounded-2xl bg-sage text-paper font-medium hover:bg-sage-deep transition-colors"
+            >
+              Not sure? Take the 60-second assessment &rarr;
+            </Link>
           </div>
         </section>
 

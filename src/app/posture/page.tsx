@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { EmailCapture } from "@/components/EmailCapture";
 
 export const metadata = {
   title: "Posture & Back, 40+ - Welltread",
@@ -57,14 +57,19 @@ export default function Posture() {
         <section className="bg-paper-warm/50 border-y border-line/60">
           <div className="mx-auto max-w-4xl px-6 py-20 text-center">
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-ink">
-              Programs open soon.
+              See your 12-week plan.
             </h2>
             <p className="mt-4 text-lg text-ink-soft max-w-lg mx-auto">
-              Drop your email. We&rsquo;ll send your assessment when
-              we&rsquo;re ready - not before.
+              A few quick questions and we&rsquo;ll show you exactly what
+              we&rsquo;d build for you.
             </p>
-            <div className="mt-10 max-w-md mx-auto">
-              <EmailCapture source="posture" ctaLabel="Get the assessment" />
+            <div className="mt-10">
+              <Link
+                href="/quiz?source=posture"
+                className="inline-block px-7 h-14 leading-[3.5rem] rounded-2xl bg-sage text-paper font-medium hover:bg-sage-deep transition-colors"
+              >
+                Take the 60-second assessment &rarr;
+              </Link>
             </div>
           </div>
         </section>

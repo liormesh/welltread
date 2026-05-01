@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { EmailCapture } from "@/components/EmailCapture";
 
 export const metadata = {
   title: "Senior Mobility - Welltread",
@@ -56,14 +56,19 @@ export default function Seniors() {
         <section className="bg-paper-warm/50 border-y border-line/60">
           <div className="mx-auto max-w-4xl px-6 py-20 text-center">
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-ink">
-              Programs open soon.
+              See the program built for you.
             </h2>
             <p className="mt-4 text-lg text-ink-soft max-w-lg mx-auto">
-              Tell us where to send your program when it&rsquo;s ready. No
-              spam, no nonsense.
+              A few quick questions and we&rsquo;ll show you a 12-week plan
+              built around what your body is asking for.
             </p>
-            <div className="mt-10 max-w-md mx-auto">
-              <EmailCapture source="seniors" ctaLabel="Reserve my spot" />
+            <div className="mt-10">
+              <Link
+                href="/quiz?source=seniors"
+                className="inline-block px-7 h-14 leading-[3.5rem] rounded-2xl bg-sage text-paper font-medium hover:bg-sage-deep transition-colors"
+              >
+                Take the 60-second assessment &rarr;
+              </Link>
             </div>
           </div>
         </section>
