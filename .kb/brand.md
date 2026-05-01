@@ -51,16 +51,111 @@
 --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 ```
 
-- Headlines: `font-sans`, weight 600, tracking-tight, leading-[1.05]
-- Italic phrasings (e.g., "considered", "confidence") in sage for emphasis-as-accent
-- Body: `font-sans`, weight 400, leading-relaxed
-- Eyebrows: uppercase, tracking-[0.2em], 0.75rem, sage/80
+#### Type scale (use Tailwind utilities)
+
+| Use | Class | Computed | Example |
+|---|---|---|---|
+| Display (hero) | `text-7xl` (md+) / `text-6xl` (sm+) / `text-5xl` (mobile) | 4.5/3.75/3rem | "Every step considered." |
+| H1 page title | `text-5xl` / `text-6xl` (sm+) | 3/3.75rem | Niche LP heros |
+| H2 section | `text-3xl sm:text-4xl` | 1.875/2.25rem | "A program that adjusts to you." |
+| H3 card title | `text-2xl` | 1.5rem | NicheCard titles |
+| H4 sub-section | `text-lg font-semibold` | 1.125rem | Pain-point headers |
+| Body large (lead paragraph) | `text-xl` | 1.25rem | First-paragraph subheads |
+| Body | `text-base` | 1rem | Card descriptions |
+| Body small | `text-sm` | 0.875rem | Footer, captions |
+| Eyebrow | `text-xs uppercase tracking-[0.2em]` | 0.75rem | "Personalized Movement" |
+
+#### Weights & rhythm
+
+- Headlines: `font-semibold` (600), `tracking-tight`, `leading-[1.05]`
+- Italic accent phrasings ("considered", "confidence", "move") in `text-sage italic font-normal` - emphasis through *style* not weight
+- Body: `font-normal` (400), `leading-relaxed` (1.625)
+- Eyebrows: `tracking-[0.2em]`, `text-sage/80` or `text-clay`
+
+### Spacing
+
+| Token | Value | Use |
+|---|---|---|
+| Section padding | `py-20` to `py-24` | Hero, large content blocks |
+| Card padding | `p-8` | NicheCards, feature blocks |
+| Form field height | `h-12` | Inputs, buttons |
+| Container | `max-w-6xl mx-auto px-6` | Default page wrapper |
+| Hero text width | `max-w-2xl` to `max-w-4xl` | Body copy lines stay readable |
+| Vertical rhythm | 8px grid (Tailwind default) | All gaps |
 
 ### Layout
 - Generous whitespace. No dense sections.
 - Max content width: 1152px (`max-w-6xl`). Hero text often narrower (`max-w-4xl`).
 - Border radius: 1rem (`rounded-2xl`) for inputs and buttons; 1.5rem (`rounded-3xl`) for cards.
 - Shadow used sparingly - hover reveal only.
+
+### Component primitives
+
+#### Buttons
+```tsx
+// Primary
+<button className="px-6 h-12 rounded-2xl bg-sage text-paper font-medium hover:bg-sage-deep transition-colors">
+
+// Secondary (outline)
+<button className="px-6 h-12 rounded-2xl border border-sage text-sage hover:bg-sage hover:text-paper transition-colors">
+
+// Tertiary (ghost / link-style)
+<button className="text-sm text-sage font-medium hover:text-sage-deep">
+```
+
+#### Inputs
+```tsx
+<input className="flex-1 px-4 h-12 rounded-2xl border border-line bg-paper-warm/30 text-ink placeholder:text-ink-soft/50 focus:outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 transition" />
+```
+
+#### Cards
+```tsx
+// Niche card (clickable, hover-active)
+<Link className="group rounded-3xl border border-line bg-paper p-8 hover:border-sage/40 hover:shadow-sm transition-all">
+
+// Static card (information-only)
+<div className="rounded-3xl border border-line bg-paper p-8">
+
+// Highlighted card (paywall best-value, etc.)
+<div className="rounded-3xl border-2 border-sage bg-paper-warm/30 p-8">
+```
+
+#### Section dividers
+- Section accent backgrounds: `bg-paper-warm/50` with `border-y border-line/60`
+- Section labels (eyebrows): centered or left-aligned, paired with H2
+
+#### Forms (multi-step quiz preview)
+- One question per screen
+- Large tap targets (min 56px height)
+- Progress indicator at top: thin sage bar fills 0-100%
+- Single CTA per screen, sage filled
+- Back link top-left, ghost style
+
+### Motion
+- Default `transition-colors` and `transition-all` ease, 150-200ms
+- Hover lifts: `hover:shadow-sm` + `hover:border-sage/40`
+- Focus rings: 2px `ring-sage/20` for inputs and interactive elements
+- No bounce, no parallax - we are *calm*, not energetic
+- Scroll: respect `prefers-reduced-motion` for any larger animation we add later
+
+### Accessibility floor
+- WCAG AA contrast minimum on all text
+- All interactive elements: `min-h-[44px]` tap target
+- Visible focus state on every interactive element
+- Senior LP: extra-large body text (consider `text-lg` as default), high contrast palette, no thin sage on warm sand
+- Form labels always associated with inputs (use `<label htmlFor>` or `aria-label`)
+
+### Content tone (concrete examples)
+
+| Avoid | Use |
+|---|---|
+| "Transform your body in 12 weeks!" | "A 12-week program that adjusts to you." |
+| "Crush your fitness goals!" | "Move with confidence again." |
+| "AI-powered personalization" | "Built around what your body's asking for." |
+| "Blast belly fat" | "Functional strength to keep you independent." |
+| "Get the body you've always dreamed of" | "You used to move. Let's start there." |
+| "Revolutionary new method" | "Built around the things that matter most." |
+| Headers ending in exclamation | Headers ending in period - or no punctuation |
 
 ### Photography (when added)
 - Real people, not models. Real environments, not studios.
