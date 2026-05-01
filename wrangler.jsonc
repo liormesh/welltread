@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "welltread",
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": ".open-next/worker.js",
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "routes": [
+    { "pattern": "welltread.co", "custom_domain": true },
+    { "pattern": "www.welltread.co", "custom_domain": true },
+    { "pattern": "welltread.app", "custom_domain": true },
+    { "pattern": "www.welltread.app", "custom_domain": true }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
