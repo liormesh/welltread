@@ -9,7 +9,7 @@ Personalized movement programs. Multi-niche mobility platform delivered via quiz
 - **Next.js 16** (App Router, React 19, TypeScript) - heed AGENTS.md re: breaking changes
 - **Tailwind v4** (CSS-first via `@theme` in `globals.css`)
 - **Cloudflare Workers** deploy via `@opennextjs/cloudflare`
-- **Supabase** (welltread project - to be created) for data, auth, email capture
+- **Supabase** (project `xzjwbrtvxlluwjkjsmgr`, Tokyo) for data, auth, email capture
 - **Stripe** for paywall (test mode until we go live)
 - **GitHub Actions** auto-deploy on push to main
 
@@ -51,11 +51,11 @@ Defined in `src/app/globals.css`. Use the semantic class names:
 | `/` | Brand home | Live (placeholder) |
 | `/seniors` | Senior Mobility 60+ | Live (placeholder LP) |
 | `/posture` | Posture & Back 40+ | Live (placeholder LP) |
-| `/api/notify` | Email capture | Logs to console (TODO: persist to Supabase) |
+| `/api/notify` | Email capture | Live - writes to `email_signups` in Supabase |
 
 ## Next steps queue
 
-1. Wire `/api/notify` → Supabase `welltread.email_signups` table
+1. ~~Wire `/api/notify` → Supabase `welltread.email_signups` table~~ Done
 2. Build dynamic quiz at `/quiz` with branching by `?source=` UTM
 3. Plan-reveal mockup pages per niche
 4. Stripe Checkout integration with 5-tier paywall
