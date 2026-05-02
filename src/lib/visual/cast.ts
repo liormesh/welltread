@@ -1,0 +1,102 @@
+/**
+ * Welltread cast - the recurring characters used across the brand.
+ *
+ * Each cast member has a stable visual description that can be appended
+ * to any prompt to keep their look consistent across new generations.
+ *
+ * Usage: when generating a new image of Eleanor, prepend
+ * `CAST.eleanor.description` to the scene-specific prompt. Reference the
+ * canonical image in the prompt as well to bias toward facial consistency.
+ */
+
+import type { Niche } from "@/lib/quiz/definition";
+
+export type Gender = "female" | "male" | "nonbinary";
+export type AgeBand = "40-49" | "50-59" | "60-69" | "70+";
+
+export type CastMember = {
+  id: string;
+  name: string;
+  age: number;
+  ageBand: AgeBand;
+  gender: Gender;
+  ethnicity: string;
+  niches: Niche[];
+  /** One-line tag for use in UI metadata. */
+  tagline: string;
+  /** Detailed visual description, prompt-ready. Append scene-specific direction after. */
+  description: string;
+  canonicalImage: string;
+};
+
+export const CAST = {
+  eleanor: {
+    id: "eleanor",
+    name: "Eleanor",
+    age: 67,
+    ageBand: "60-69",
+    gender: "female",
+    ethnicity: "white",
+    niches: ["seniors"],
+    tagline: "Senior Mobility 60+ - the steady-and-curious archetype",
+    description:
+      "A 67-year-old white woman named Eleanor. Distinctive features: shoulder-length silver-grey hair worn loose with a slight wave, soft smile lines around warm hazel eyes, slim build, narrow shoulders, slightly elongated face, peaceful natural expression with mouth gently closed. Wearing a fitted sage-green long-sleeve henley and natural-color linen wide-leg pants. Real natural skin texture with visible age lines, no makeup, dignified.",
+    canonicalImage: "/cast/eleanor.png",
+  },
+
+  james: {
+    id: "james",
+    name: "James",
+    age: 70,
+    ageBand: "70+",
+    gender: "male",
+    ethnicity: "Black",
+    niches: ["seniors"],
+    tagline: "Senior Mobility 70+ - the dignified-and-strong archetype",
+    description:
+      "A 70-year-old Black man named James. Distinctive features: full short-cropped grey hair, neatly trimmed grey beard along his jawline, tall lean athletic build, broad shoulders, deep brown eyes with gentle smile lines at the corners, calm thoughtful expression with mouth gently closed. Wearing a soft sage-green long-sleeve henley and loose charcoal cotton joggers. Real natural skin texture with visible age lines, dignified.",
+    canonicalImage: "/cast/james.png",
+  },
+
+  maria: {
+    id: "maria",
+    name: "Maria",
+    age: 52,
+    ageBand: "50-59",
+    gender: "female",
+    ethnicity: "Latina",
+    niches: ["posture", "general"],
+    tagline: "Posture & General 40-50s - the working-mom-of-grown-kids archetype",
+    description:
+      "A 52-year-old Latina woman named Maria. Distinctive features: dark brown hair pulled back into a low casual ponytail at the nape of her neck with a few loose strands, warm brown almond-shaped eyes, full eyebrows, athletic-but-real build (toned but not gym-perfect, slight midsection softness, real proportions), warm olive skin with light natural makeup, slight smile lines, peaceful focused expression with mouth gently closed. Wearing a fitted sage-green tank top and natural-color linen wide-leg pants. Real natural skin texture, no airbrushing.",
+    canonicalImage: "/cast/maria.png",
+  },
+
+  david: {
+    id: "david",
+    name: "David",
+    age: 47,
+    ageBand: "40-49",
+    gender: "male",
+    ethnicity: "white",
+    niches: ["posture", "general"],
+    tagline: "Posture & Back 40+ men - the desk-job-but-still-fighting archetype",
+    description:
+      "A 47-year-old white man named David. Distinctive features: salt-and-pepper hair (mostly brown with grey at the temples) worn short and slightly tousled, brown eyes behind subtle round wire-frame glasses, light brown beard stubble of two days, slight desk-job softness around the midsection (real, average build), warm tan skin with mild sun marks, calm focused expression with mouth gently closed (no smile, slightly serious but warm). Wearing a sage-green long-sleeve henley with the top two buttons open and tan cotton chinos rolled at the ankle. Real natural skin texture, dignified, professional.",
+    canonicalImage: "/cast/david.png",
+  },
+} satisfies Record<string, CastMember>;
+
+export type CastId = keyof typeof CAST;
+
+/** Pick the cast member best matched to a niche + age band, with sensible fallbacks. */
+export function castFor(niche: Niche, ageBand?: AgeBand): CastMember {
+  const candidates: CastMember[] = (Object.values(CAST) as CastMember[]).filter(
+    (c) => (c.niches as Niche[]).includes(niche),
+  );
+  if (ageBand) {
+    const exact = candidates.find((c) => c.ageBand === ageBand);
+    if (exact) return exact;
+  }
+  return candidates[0] ?? CAST.maria;
+}
