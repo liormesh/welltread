@@ -61,18 +61,24 @@ type Ctx = {
 };
 
 function wrap(content: string, ctx?: Ctx): string {
-  // Header: niche-lead cast portrait (avatar) + Welltread wordmark.
-  // Falls back to wordmark only if no cast image is provided.
+  // Inline SVG symbol — three ascending dashes, sage. Email clients support inline SVG inconsistently;
+  // VML fallback would be ideal but adds bulk. Most modern clients (Gmail, Apple Mail, Outlook 2019+) render it.
+  const symbolSvg = `<svg width="20" height="20" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;"><g fill="${SAGE}"><rect x="4" y="26" width="11" height="4" rx="2"/><rect x="14.5" y="18" width="11" height="4" rx="2"/><rect x="25" y="10" width="11" height="4" rx="2"/></g></svg>`;
+
+  // Header: niche-lead cast portrait (avatar) + Welltread lockup.
+  // Falls back to lockup only if no cast image is provided.
+  const wordmarkHtml = `<span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:${SAGE};letter-spacing:0.2em;text-transform:uppercase;">${symbolSvg}<span>Welltread</span></span>`;
+
   const headerHtml = ctx?.castImageUrl
     ? `<div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;">
          <img src="${ctx.castImageUrl}" alt="${ctx.castName ?? "Welltread"}" width="48" height="60" style="display:block;width:48px;height:60px;border-radius:12px;object-fit:cover;border:1px solid #E6DFCF;" />
          <div>
-           <div style="font-size:14px;font-weight:600;color:${SAGE};letter-spacing:0.2em;text-transform:uppercase;">Welltread</div>
+           ${wordmarkHtml}
            ${ctx.castName ? `<div style="font-size:12px;color:${INK_SOFT};margin-top:2px;">From ${ctx.castName}</div>` : ""}
          </div>
        </div>`
     : `<div style="text-align:left;margin-bottom:32px;">
-         <span style="font-size:14px;font-weight:600;color:${SAGE};letter-spacing:0.2em;text-transform:uppercase;">Welltread</span>
+         ${wordmarkHtml}
        </div>`;
 
   return `<!DOCTYPE html>

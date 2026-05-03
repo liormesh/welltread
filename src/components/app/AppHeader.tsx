@@ -1,9 +1,11 @@
 /**
  * Reused header for /app/* screens.
  *
- * Centered uppercase title; sage wordmark on left; soft "more" target on right
+ * Centered uppercase title; sage logo on left; soft "more" target on right
  * (will become a settings/notification dropdown post-Phase-1).
  */
+
+import { WelltreadLogo } from "../brand/WelltreadLogo";
 
 export function AppHeader({
   title,
@@ -19,7 +21,7 @@ export function AppHeader({
           subdued ? "text-ink-soft/70" : "text-sage"
         }`}
       >
-        welltread
+        <WelltreadLogo variant="full" symbolSize={16} />
       </span>
       <span className="text-xs uppercase tracking-[0.2em] text-ink-soft/70">
         {title}

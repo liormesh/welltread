@@ -1,0 +1,23 @@
+{
+  "name": "Welltread",
+  "short_name": "Welltread",
+  "description": "Personalized movement programs for adults 40+",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf7f2",
+  "theme_color": "#2d4f4a",
+  "icons": [
+    {
+      "src": "/brand/favicon/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/favicon/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

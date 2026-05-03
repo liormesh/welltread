@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 40" role="img" aria-label="Welltread">
+  <title>Welltread</title>
+  <g fill="#2d4f4a">
+    <rect x="4" y="26" width="11" height="4" rx="2"/>
+    <rect x="14.5" y="18" width="11" height="4" rx="2"/>
+    <rect x="25" y="10" width="11" height="4" rx="2"/>
+  </g>
+  <text x="48" y="28" fill="#2d4f4a"
+        font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font-size="22" font-weight="500" letter-spacing="-0.3">welltread</text>
+</svg>

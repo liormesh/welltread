@@ -31,6 +31,9 @@
 .DS_Store
 *.pem
 
+# brand exploration artifacts (kept local, not shipped)
+/public/logo-concepts/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WelltreadLogo } from "./brand/WelltreadLogo";
 
 export function Header() {
   return (
@@ -8,7 +9,7 @@ export function Header() {
           href="/"
           className="text-lg font-semibold tracking-tight text-sage hover:text-sage-deep transition-colors"
         >
-          welltread
+          <WelltreadLogo variant="full" symbolSize={22} />
         </Link>
         <nav className="hidden sm:flex items-center gap-8 text-sm text-ink-soft">
           <Link href="/seniors" className="hover:text-sage transition-colors">

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { WelltreadLogo } from "@/components/brand/WelltreadLogo";
 
 export const metadata: Metadata = {
-  title: "Welltread — Vault",
+  title: "Welltread - Vault",
   description: "Internal vault. Authorized access only.",
   robots: { index: false, follow: false, nocache: true },
 };
@@ -14,7 +15,7 @@ export default function VaultLayout({ children }: { children: React.ReactNode })
         <div className="mx-auto max-w-7xl px-6 h-14 flex items-center justify-between text-sm">
           <div className="flex items-center gap-6">
             <Link href="/vault" className="text-sage font-semibold">
-              welltread
+              <WelltreadLogo variant="full" symbolSize={18} />
             </Link>
             <span className="text-ink-soft/60">·</span>
             <span className="text-ink-soft">vault</span>
