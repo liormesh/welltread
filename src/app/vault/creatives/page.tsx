@@ -60,17 +60,41 @@ const SAMPLES: Creative[] = [
   },
 ];
 
-const GROUP_HERO: Creative = {
-  id: "cast_group_hero",
-  src: "/cast/group_hero.png",
-  title: "The cast - group hero",
-  intent:
-    "Consistency check: all four cast members in a single frame. If their faces hold across this, they'll hold across single-character scenes. Tests for visual identity drift in multi-subject prompts.",
-  prompt:
-    "Group portrait, left to right: Maria, David, James, Eleanor. Each character described with full distinctive-feature paragraph. Sage / paper-cream palette. NYT Well section group feature. 16:9.",
-  aspect: "16:9",
-  source: "nano-banana",
-};
+const GROUP_HEROES: Creative[] = [
+  {
+    id: "cast_group_hero",
+    src: "/cast/group_hero.png",
+    title: "Group hero - standing portrait",
+    intent:
+      "Consistency check: all four cast members in a single frame. If their faces hold across this, they'll hold across single-character scenes. Tests for visual identity drift in multi-subject prompts.",
+    prompt:
+      "Group portrait, left to right: Maria, David, James, Eleanor. Each character described with full distinctive-feature paragraph. Sage / paper-cream palette. NYT Well section group feature. 16:9.",
+    aspect: "16:9",
+    source: "nano-banana",
+  },
+  {
+    id: "cast_group_mat_catcow",
+    src: "/cast/group_mat_catcow.png",
+    title: "Group on mats - seated cat-cow",
+    intent:
+      "All 4 cast members performing the same mobility drill on individual yoga mats. Tests in-pose group consistency + class-feel for plan reveal hero.",
+    prompt:
+      "All 4 characters seated cross-legged on individual yoga mats, performing seated cat-cow stretch. Same studio, same light, same palette.",
+    aspect: "16:9",
+    source: "nano-banana",
+  },
+  {
+    id: "cast_group_balance_chairs",
+    src: "/cast/group_balance_with_chairs.png",
+    title: "Group balance - regression vs progression",
+    intent:
+      "Same exercise (single-leg balance), differentiated by support level. Maria + David freestanding (advanced); James + Eleanor with chair support (regressed). Demonstrates the contraindication-aware progression visually - one of the most important brand-story shots.",
+    prompt:
+      "All 4 characters performing single-leg balance hold. Eleanor and James with fingertips on dining-chair backs; Maria and David freestanding. 16:9.",
+    aspect: "16:9",
+    source: "nano-banana",
+  },
+];
 
 const CAST_CREATIVES: Creative[] = Object.values(CAST).map((c) => ({
   id: `cast_${c.id}`,
@@ -149,7 +173,7 @@ export default function Creatives() {
           title="The cast - group hero"
           body="The consistency test. All four cast members in one frame. If their faces hold here, they hold everywhere."
         />
-        <CreativesReview creatives={[GROUP_HERO]} />
+        <CreativesReview creatives={GROUP_HEROES} />
       </section>
 
       <section>

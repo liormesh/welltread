@@ -50,6 +50,20 @@ export default function VaultIndex() {
 
       <section className="mt-16">
         <p className="text-xs uppercase tracking-[0.2em] text-clay mb-4">
+          Funnel
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card
+            href="/vault/quiz-flow"
+            eyebrow="09"
+            title="Quiz flow"
+            body="The full questionnaire. 28 Q's, 5 acts, branching, conditional skips, dynamic stat injection."
+          />
+        </div>
+      </section>
+
+      <section className="mt-16">
+        <p className="text-xs uppercase tracking-[0.2em] text-clay mb-4">
           The build
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

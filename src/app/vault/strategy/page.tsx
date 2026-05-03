@@ -19,65 +19,76 @@ export default function Strategy() {
         </p>
       </header>
 
-      <Section eyebrow="Phase 0" title="Validate the niche (now → 2 weeks)">
+      <Section eyebrow="Phase 0" title="Acquisition funnel — complete (now → ~2 weeks)">
         <Body>
-          $500 Meta classification kill-test. Drive paid traffic to two
-          niche-source variants of the quiz funnel (seniors + posture). Measure
-          ad delivery, classification (no fragile-permitted flags), CPM, CTR,
-          quiz completion rate, email capture rate. Decision gate: green if
-          Meta delivers cleanly and CPL ≤ $5; pivot if either condition fails.
+          Build and ship the entire pre-Stripe acquisition layer: 28-question
+          quiz v2, all interstitials, all visuals (cast portraits, drill
+          shapes, body diagram), all niche-specific LPs, plan-reveal page with
+          activity-plug-in hero, paywall scaffolding (no charge yet), and the
+          email pipeline. End state: a user can click an ad, complete the
+          full quiz, see a personalized plan reveal, and land on a paywall
+          screen. The funnel is clickable end-to-end before any payment is
+          processed.
         </Body>
         <ChecklistGrid>
-          <Check>$500 Meta budget split 60/40 senior / posture</Check>
-          <Check>2 ad variants per niche (lifestyle hero + UGC-style)</Check>
-          <Check>5 audience tests (interest-based + lookalike scaffolding)</Check>
-          <Check>UTM consistency end-to-end (paid → quiz → completion)</Check>
+          <Check>28-question quiz v2 live (refactor from current v1)</Check>
+          <Check>Custom body-diagram component for Q5</Check>
+          <Check>Slider-battery component for Q11-Q18</Check>
+          <Check>Free-text + chips component for Q19</Check>
+          <Check>Cinematic loader (S10) with shape morphing</Check>
+          <Check>Plan reveal v2 with Q19 answer plugged into hero copy</Check>
+          <Check>Paywall page with 3-tier layout, per-day pricing, money-back badge</Check>
+          <Check>Cast-portrait + drill-shape integration across all question slots</Check>
+          <Check>UGC ad creative batch (30-50 variants via Billo)</Check>
         </ChecklistGrid>
       </Section>
 
-      <Section eyebrow="Phase 1" title="Launch with paywall (weeks 3-6)">
+      <Section eyebrow="Phase 1" title="Product — training plan + hybrid app (weeks 2-8)">
         <Body>
-          Stripe live. 28-question quiz v2 deployed with body diagram and
-          niche branching. Plan reveal copy plugs in user&rsquo;s
-          &ldquo;activity to get back to&rdquo; answer. 7-day $1 trial →
-          auto-bill. Goal: prove unit economics with 100-300 paid trials.
+          Build the actual product the user paid for. Stripe live. Composable
+          training plan engine (movement → block → session → week → archetype)
+          with PT-recorded movement library and contraindication-aware
+          assignment engine. Hybrid app via PWA-first (welltread.app) with
+          Capacitor wrappers for iOS/Android stores. This is where we earn
+          retention.
         </Body>
         <ChecklistGrid>
-          <Check>28-question quiz v2 live</Check>
           <Check>Stripe Checkout + webhook → user_plans creation</Check>
-          <Check>Server-side event router (Meta CAPI + TikTok Events API)</Check>
-          <Check>First 80 movements + 12 week templates per niche</Check>
-          <Check>Hard-coded archetype assignment (Phase 1 of plan engine)</Check>
+          <Check>blocks / sessions / week_templates / program_archetypes tables</Check>
+          <Check>Assignment engine v1 (niche + contraindications + equipment filter)</Check>
+          <Check>First 80-100 PT-recorded movement videos (in-studio batch)</Check>
+          <Check>12 week templates per niche, hand-built by PT</Check>
+          <Check>welltread.app PWA: dashboard, today's session, weekly check-in</Check>
+          <Check>iOS/Android Capacitor wrappers, store listing prep (ASO)</Check>
         </ChecklistGrid>
       </Section>
 
-      <Section eyebrow="Phase 2" title="Optimize and expand (months 2-4)">
+      <Section eyebrow="Phase 2" title="Paid acquisition + scale (weeks 8-16)">
         <Body>
-          With CAC/LTV signal in hand, scale spend on the working niche, kill
-          the loser. Add 3rd niche based on the CPA winner direction
-          (postpartum if women 40+ converts cheap, GLP-1 if posture/back
-          converts and we want medication-adjacent).
+          Now we spend. Paid social / paid search at scale, with a working
+          product behind the funnel. Server-side event router for clean
+          attribution. Iterate on creative + funnel based on real CPA/LTV
+          data. Add 3rd niche based on the CPA winner direction.
         </Body>
         <ChecklistGrid>
-          <Check>3-5x ad budget on winning niche</Check>
-          <Check>Add 3rd niche (postpartum or GLP-1)</Check>
-          <Check>Personalization v1 (equipment + contraindication filters)</Check>
-          <Check>Adherence and weekly check-in feedback loop</Check>
-          <Check>Add Rewardful for affiliate program (post-CPA validation)</Check>
+          <Check>Meta + TikTok pixel + CAPI + click-ID matching</Check>
+          <Check>$500 Meta classification kill-test → scale on winners</Check>
+          <Check>Personalization v1 (manual user-flagged adaptation)</Check>
+          <Check>Add 3rd niche (postpartum or GLP-1 based on winner)</Check>
+          <Check>Affiliate program via Rewardful (post-CPA validation)</Check>
         </ChecklistGrid>
       </Section>
 
-      <Section eyebrow="Phase 3" title="Scale and adapt (months 5-9)">
+      <Section eyebrow="Phase 3" title="Adapt + retain (months 5-9)">
         <Body>
           Adaptive assignment engine. Cross-niche recommendations. Native
-          mobile (Phase 2 gate after PWA proves engagement). Strategic content
-          partnerships with PT influencers (curated, not open marketplace).
+          performance optimization. Strategic content partnerships with PT
+          influencers (curated, not open marketplace).
         </Body>
         <ChecklistGrid>
           <Check>Auto-adaptation on completion data</Check>
           <Check>Re-eval at week 4 and week 8</Check>
-          <Check>iOS/Android native via Capacitor or React Native</Check>
-          <Check>5-10 hand-picked PT/coach partnerships</Check>
+          <Check>5-10 hand-picked PT/coach partnerships (Peloton-instructor model)</Check>
         </ChecklistGrid>
       </Section>
 
