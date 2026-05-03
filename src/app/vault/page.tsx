@@ -83,6 +83,12 @@ export default function VaultIndex() {
             title="Email sequences"
             body="16 emails across acquisition + payment lifecycle. Acquisition wired and live, payment templates ready."
           />
+          <Card
+            href="/vault/product-scope"
+            eyebrow="14"
+            title="Product build scope"
+            body="14 subsystems, 4 phases, effort estimates, open decisions, blocking dependencies. The build plan."
+          />
         </div>
       </section>
 

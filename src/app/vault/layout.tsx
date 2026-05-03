@@ -41,6 +41,9 @@ export default function VaultLayout({ children }: { children: React.ReactNode })
             <Link href="/vault/product-framework" className="hover:text-sage transition-colors">
               Product
             </Link>
+            <Link href="/vault/product-scope" className="hover:text-sage transition-colors">
+              Scope
+            </Link>
             <Link href="/vault/email-sequences" className="hover:text-sage transition-colors">
               Emails
             </Link>
