@@ -1,0 +1,149 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
+const FEEL_CHIPS = ["Too easy", "Just right", "Too hard", "Hurt me"];
+
+export function DoneCheckin() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sid = searchParams.get("sid") ?? "";
+
+  const [body, setBody] = useState(3);
+  const [energy, setEnergy] = useState(3);
+  const [feel, setFeel] = useState<string | null>("Just right");
+  const [flag, setFlag] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit() {
+    setSubmitting(true);
+    // TODO Phase 1: POST to /api/app/checkin with { sid, body, energy, feel, flag }
+    // For demo: just simulate and redirect.
+    await new Promise((r) => setTimeout(r, 600));
+    router.push("/app/today");
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto pb-32 max-w-md mx-auto w-full">
+      <div className="px-6 pt-6">
+        <p className="text-xs uppercase tracking-[0.2em] text-clay">Done</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-ink">
+          Day complete.
+        </h1>
+        <p className="mt-3 text-sm text-ink-soft leading-relaxed">
+          Two quick taps and you&rsquo;re out. We use these to shape tomorrow.
+        </p>
+      </div>
+
+      <div className="px-6 mt-8 space-y-7">
+        <SliderRow
+          label="How does your body feel?"
+          left="Tense"
+          right="Easy"
+          value={body}
+          onChange={setBody}
+        />
+        <SliderRow
+          label="Energy?"
+          left="Drained"
+          right="Steady"
+          value={energy}
+          onChange={setEnergy}
+        />
+      </div>
+
+      <div className="px-6 mt-8">
+        <p className="text-sm font-medium text-ink mb-3">How did this feel?</p>
+        <div className="flex flex-wrap gap-2">
+          {FEEL_CHIPS.map((label) => {
+            const sel = feel === label;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setFeel(label)}
+                className={`px-4 py-2 rounded-full border text-sm transition-colors ${
+                  sel
+                    ? "border-sage bg-sage text-paper"
+                    : "border-line bg-paper text-ink hover:border-sage/50"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <details className="px-6 mt-7 group">
+        <summary className="text-sm text-sage underline-offset-4 hover:underline cursor-pointer list-none">
+          Anything to flag? (optional)
+        </summary>
+        <textarea
+          value={flag}
+          onChange={(e) => setFlag(e.target.value)}
+          rows={3}
+          placeholder="Soreness? Confusion? A win?"
+          className="mt-3 w-full px-4 py-3 rounded-2xl border border-line bg-paper-warm/30 text-ink text-sm placeholder:text-ink-soft/50 focus:outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 transition resize-y"
+        />
+      </details>
+
+      <div className="px-6 mt-8">
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={submitting || !feel}
+          className="w-full h-13 py-3.5 rounded-2xl bg-sage text-paper text-base font-medium hover:bg-sage-deep disabled:opacity-50 transition-colors"
+        >
+          {submitting ? "Saving..." : "Save and finish"}
+        </button>
+        {sid && (
+          <p className="mt-3 text-xs text-ink-soft/60 text-center">
+            Session: {sid}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SliderRow({
+  label,
+  left,
+  right,
+  value,
+  onChange,
+}: {
+  label: string;
+  left: string;
+  right: string;
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div>
+      <p className="text-sm font-medium text-ink mb-3">{label}</p>
+      <div className="flex items-center gap-3">
+        <span className="text-xs text-ink-soft w-14 text-right shrink-0">
+          {left}
+        </span>
+        <input
+          type="range"
+          min={1}
+          max={5}
+          step={1}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="flex-1 accent-sage h-2"
+        />
+        <span className="text-xs text-ink-soft w-14 shrink-0">{right}</span>
+      </div>
+      <div className="mt-2 flex justify-center">
+        <span className="text-2xl font-semibold text-sage tabular-nums">
+          {value}
+        </span>
+      </div>
+    </div>
+  );
+}
