@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   getSlot,
@@ -8,10 +8,11 @@ import {
   resolveNiche,
   isQuestion,
   isInterstitial,
-  QUIZ_VERSION,
+  shouldSkipAttribution,
   type Answers,
   type Source,
   type AnswerValue,
+  type Question,
 } from "@/lib/quiz/definition";
 import { QuestionRenderer } from "@/components/quiz/QuestionRenderer";
 import { InterstitialRenderer } from "@/components/quiz/InterstitialRenderer";
@@ -30,6 +31,7 @@ const STORAGE_KEY = "wt:quiz:v2";
 type Persisted = {
   id: string;
   source: Source;
+  utm: Record<string, string>;
   history: string[];
   current: string;
   answers: Answers;
@@ -76,6 +78,8 @@ function collectUtm(params: URLSearchParams) {
   return { utm, click_ids };
 }
 
+const TOTAL_STEPS_APPROX = 38;
+
 export function QuizRunner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -85,7 +89,10 @@ export function QuizRunner() {
     SOURCES.includes(sourceParam as Source) ? sourceParam : "home"
   ) as Source;
 
+  const initialUtm = useMemo(() => collectUtm(searchParams).utm, [searchParams]);
+
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [utm, setUtm] = useState<Record<string, string>>(initialUtm);
   const [history, setHistory] = useState<string[]>([]);
   const [current, setCurrent] = useState<string>(startSlotId(source));
   const [answers, setAnswers] = useState<Answers>({});
@@ -97,19 +104,20 @@ export function QuizRunner() {
     const persisted = loadPersisted();
     if (persisted && persisted.source === source) {
       setSessionId(persisted.id);
+      setUtm(persisted.utm ?? {});
       setHistory(persisted.history);
       setCurrent(persisted.current);
       setAnswers(persisted.answers);
       return;
     }
 
-    const { utm, click_ids } = collectUtm(searchParams);
+    const { utm: bootUtm, click_ids } = collectUtm(searchParams);
     fetch("/api/quiz/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         source,
-        utm,
+        utm: bootUtm,
         click_ids,
         referrer: typeof document !== "undefined" ? document.referrer : "",
       }),
@@ -118,9 +126,11 @@ export function QuizRunner() {
       .then((data) => {
         if (data?.id) {
           setSessionId(data.id);
+          setUtm(bootUtm);
           savePersisted({
             id: data.id,
             source,
+            utm: bootUtm,
             history: [],
             current: startSlotId(source),
             answers: {},
@@ -152,25 +162,37 @@ export function QuizRunner() {
   );
 
   const slot = getSlot(current);
-  const totalSteps = 38; // approximate; for progress bar
   const progress = Math.min(
     100,
-    Math.round((history.length / totalSteps) * 100),
+    Math.round((history.length / TOTAL_STEPS_APPROX) * 100),
   );
 
-  function advance(nextId: string, newAnswers: Answers) {
+  /**
+   * Resolve the actual next slot id, respecting dynamic skips
+   * (e.g. Q27 attribution skipped if utm_source is set).
+   */
+  function resolveNextId(rawNextId: string): string {
+    if (rawNextId === "Q27" && shouldSkipAttribution(utm["utm_source"])) {
+      return "Q28";
+    }
+    return rawNextId;
+  }
+
+  function advance(nextIdRaw: string, newAnswers: Answers) {
     if (!sessionId) return;
     const nextHistory = [...history, current];
-    if (nextId === "DONE") {
+    if (nextIdRaw === "DONE") {
       submitFinal(newAnswers, nextHistory);
       return;
     }
+    const nextId = resolveNextId(nextIdRaw);
     setHistory(nextHistory);
     setCurrent(nextId);
     setAnswers(newAnswers);
     persistAndSave({
       id: sessionId,
       source,
+      utm,
       history: nextHistory,
       current: nextId,
       answers: newAnswers,
@@ -198,14 +220,14 @@ export function QuizRunner() {
       });
       if (!res.ok) throw new Error();
 
-      const persisted: Persisted = {
+      savePersisted({
         id: sessionId,
         source,
+        utm,
         history: finalHistory,
         current: "DONE",
         answers: finalAnswers,
-      };
-      savePersisted(persisted);
+      });
 
       router.push("/plan");
     } catch {
@@ -224,6 +246,7 @@ export function QuizRunner() {
     persistAndSave({
       id: sessionId,
       source,
+      utm,
       history: nextHistory,
       current: last,
       answers,
@@ -234,21 +257,20 @@ export function QuizRunner() {
     if (!slot || !isQuestion(slot)) return;
     const newAnswers = { ...answers, [slot.id]: value };
     setAnswers(newAnswers);
-    // Single-select questions auto-advance
     if (slot.type === "single" || slot.type === "yesno") {
       const nextId = slot.next(value, newAnswers);
       advance(nextId, newAnswers);
     } else {
-      // checkbox / multi - stay on screen, wait for continue
-      setAnswers(newAnswers);
-      const updated: Persisted = {
-        id: sessionId!,
-        source,
-        history,
-        current,
-        answers: newAnswers,
-      };
-      persistAndSave(updated);
+      if (sessionId) {
+        persistAndSave({
+          id: sessionId,
+          source,
+          utm,
+          history,
+          current,
+          answers: newAnswers,
+        });
+      }
     }
   }
 
@@ -260,6 +282,7 @@ export function QuizRunner() {
       persistAndSave({
         id: sessionId,
         source,
+        utm,
         history,
         current,
         answers: newAnswers,
@@ -275,6 +298,7 @@ export function QuizRunner() {
       persistAndSave({
         id: sessionId,
         source,
+        utm,
         history,
         current,
         answers: newAnswers,
@@ -290,6 +314,7 @@ export function QuizRunner() {
       persistAndSave({
         id: sessionId,
         source,
+        utm,
         history,
         current,
         answers: newAnswers,
@@ -341,9 +366,15 @@ export function QuizRunner() {
     );
   }
 
+  const promptText = isQuestion(slot)
+    ? slot.getPrompt
+      ? slot.getPrompt(answers)
+      : slot.prompt
+    : "";
+
   return (
     <div>
-      {/* Progress bar */}
+      {/* Progress bar with step label */}
       <div className="mb-10">
         <div className="h-1 w-full bg-line/60 rounded-full overflow-hidden">
           <div
@@ -352,7 +383,7 @@ export function QuizRunner() {
           />
         </div>
         <div className="mt-3 flex items-center justify-between text-xs text-ink-soft/70">
-          <span>{slot.id}</span>
+          <span className="uppercase tracking-[0.15em]">{slot.stepLabel}</span>
           {history.length > 0 && (
             <button
               type="button"
@@ -369,7 +400,8 @@ export function QuizRunner() {
 
       {isQuestion(slot) && (
         <QuestionRenderer
-          question={slot}
+          question={slot as Question}
+          promptText={promptText}
           value={answers[slot.id]}
           onSingle={onSingle}
           onMulti={onMulti}

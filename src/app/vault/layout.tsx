@@ -35,6 +35,9 @@ export default function VaultLayout({ children }: { children: React.ReactNode })
             <Link href="/vault/quiz-flow" className="hover:text-sage transition-colors">
               Quiz flow
             </Link>
+            <Link href="/vault/ui-rules" className="hover:text-sage transition-colors">
+              UI rules
+            </Link>
             <Link href="/vault/brand" className="hover:text-sage transition-colors">
               Brand
             </Link>

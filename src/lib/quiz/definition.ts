@@ -10,10 +10,10 @@
  * Conditional skips:
  *   - Q6 only if Q5 has any selection (not just "none")
  *   - Q23 only if Q22 = "yes"
+ *   - Q27 (source attribution) skipped if utm_source is set (the QuizRunner handles this)
  *
- * Interstitials are non-question screens (stat cards, reassurance, educational,
- * PT insight, testimonials, cinematic loader). They live in the same flow as
- * questions and are surfaced by id.
+ * Dynamic prompts:
+ *   - Q24 commitment phrasing depends on Q10 time choice
  */
 
 export const QUIZ_VERSION = "v2";
@@ -33,10 +33,9 @@ export type Answers = Record<string, AnswerValue>;
 
 /** Visual primitive used to render a slot. */
 export type Visual =
-  | { kind: "icon-chips"; iconSet: "goal" | "activity" }
+  | { kind: "chips" }
   | { kind: "photo-cards"; cards: { value: string; label: string; image: string }[] }
   | { kind: "icon-cards"; cards: { value: string; label: string; icon: string }[] }
-  | { kind: "body-map" }
   | { kind: "slider-1-10"; left: string; right: string }
   | { kind: "statement-slider"; left: string; right: string }
   | { kind: "freetext-with-chips"; placeholder: string; chips: { value: string; label: string }[] }
@@ -50,20 +49,23 @@ export type QuestionOption = { value: string; label: string; helper?: string };
 export type Question = {
   kind: "question";
   id: string;
+  /** Short label shown in the progress bar. */
+  stepLabel: string;
   prompt: string;
+  /** Optional dynamic prompt computed from prior answers (overrides `prompt`). */
+  getPrompt?: (all: Answers) => string;
   helper?: string;
   type: "single" | "multi" | "slider" | "statement" | "freetext" | "yesno" | "checkbox" | "email";
   options?: QuestionOption[];
   visual: Visual;
-  /** Returns the next slot id, or "EMAIL" sentinel if Q is the last before paywall. */
   next: (answer: AnswerValue, all: Answers) => string;
 };
 
 export type Interstitial = {
   kind: "interstitial";
   id: string;
+  stepLabel: string;
   type: "stat" | "reassurance" | "educational" | "pt-insight" | "testimonial" | "loader" | "how-different";
-  /** Resolves headline + body at runtime based on answers. Allows niche/age-band variants. */
   render: (all: Answers) => InterstitialContent;
   next: (all: Answers) => string;
 };
@@ -107,6 +109,18 @@ export function resolveAgeBand(answers: Answers): "40-49" | "50-59" | "60-69" | 
   return undefined;
 }
 
+/** Resolve daily-minutes phrase from Q10 answer. */
+export function resolveTimePerDay(answers: Answers): string {
+  const t = answers["Q10"] as string | undefined;
+  switch (t) {
+    case "lt10": return "8-10 minutes a day";
+    case "10-20": return "10-20 minutes a day";
+    case "20-30": return "20-30 minutes a day";
+    case "30plus": return "30+ minutes a day";
+    default: return "12 minutes a day"; // brand default
+  }
+}
+
 /* -------------------- SLOT GRAPH -------------------- */
 
 const SLOTS: Record<string, Slot> = {
@@ -115,10 +129,11 @@ const SLOTS: Record<string, Slot> = {
   Q1: {
     kind: "question",
     id: "Q1",
+    stepLabel: "Goals",
     prompt: "What does moving better mean to you?",
     helper: "Pick all that apply. We design around the loudest one.",
     type: "multi",
-    visual: { kind: "icon-chips", iconSet: "goal" },
+    visual: { kind: "chips" },
     options: [
       { value: "stiffness", label: "Reduce stiffness" },
       { value: "stay-strong", label: "Stay strong as I age" },
@@ -133,6 +148,7 @@ const SLOTS: Record<string, Slot> = {
   Q2: {
     kind: "question",
     id: "Q2",
+    stepLabel: "Age",
     prompt: "What life stage are you in?",
     type: "single",
     visual: {
@@ -150,6 +166,7 @@ const SLOTS: Record<string, Slot> = {
   Q3: {
     kind: "question",
     id: "Q3",
+    stepLabel: "Activity",
     prompt: "How active are you most weeks?",
     type: "single",
     visual: {
@@ -167,6 +184,7 @@ const SLOTS: Record<string, Slot> = {
   S1: {
     kind: "interstitial",
     id: "S1",
+    stepLabel: "Welcome",
     type: "reassurance",
     render: (all) => {
       const ageBand = resolveAgeBand(all);
@@ -193,6 +211,7 @@ const SLOTS: Record<string, Slot> = {
   Q4: {
     kind: "question",
     id: "Q4",
+    stepLabel: "Body context",
     prompt: "What sex were you assigned at birth?",
     helper: "Hormonal and joint differences shape how we sequence the program. We don't use this anywhere else.",
     type: "single",
@@ -208,10 +227,11 @@ const SLOTS: Record<string, Slot> = {
   Q5: {
     kind: "question",
     id: "Q5",
+    stepLabel: "Pain & stiffness",
     prompt: "Where do you feel stiffness or pain?",
-    helper: "Tap any zones that apply. If 'none' applies, your program shifts toward maintenance.",
+    helper: "Select all that apply. Your program adjusts around it.",
     type: "multi",
-    visual: { kind: "body-map" },
+    visual: { kind: "chips" },
     options: [
       { value: "neck", label: "Neck" },
       { value: "shoulders", label: "Shoulders" },
@@ -219,9 +239,9 @@ const SLOTS: Record<string, Slot> = {
       { value: "lower-back", label: "Lower back" },
       { value: "hips", label: "Hips" },
       { value: "knees", label: "Knees" },
-      { value: "ankles", label: "Feet/Ankles" },
-      { value: "wrists", label: "Wrists/Hands" },
-      { value: "none", label: "None" },
+      { value: "ankles", label: "Feet or ankles" },
+      { value: "wrists", label: "Wrists or hands" },
+      { value: "none", label: "None of the above" },
     ],
     next: (answer) => {
       const a = answer as string[];
@@ -233,6 +253,7 @@ const SLOTS: Record<string, Slot> = {
   Q6: {
     kind: "question",
     id: "Q6",
+    stepLabel: "Pain frequency",
     prompt: "How often does it bother you?",
     type: "single",
     visual: { kind: "single-radio" },
@@ -248,10 +269,11 @@ const SLOTS: Record<string, Slot> = {
   Q7: {
     kind: "question",
     id: "Q7",
+    stepLabel: "Injuries",
     prompt: "Anything we should design around?",
     helper: "Select all that apply. We adjust the program around it.",
     type: "multi",
-    visual: { kind: "icon-chips", iconSet: "goal" },
+    visual: { kind: "chips" },
     options: [
       { value: "joint-replacement", label: "Joint replacement" },
       { value: "recent-surgery", label: "Recent surgery (last 6mo)" },
@@ -267,6 +289,7 @@ const SLOTS: Record<string, Slot> = {
   S2: {
     kind: "interstitial",
     id: "S2",
+    stepLabel: "Why we ask",
     type: "educational",
     render: () => ({
       headline: "Why we ask.",
@@ -279,6 +302,7 @@ const SLOTS: Record<string, Slot> = {
   Q8: {
     kind: "question",
     id: "Q8",
+    stepLabel: "Energy",
     prompt: "How's your energy on a typical day?",
     helper: "1 = drained by lunch. 10 = steady all day.",
     type: "slider",
@@ -289,6 +313,7 @@ const SLOTS: Record<string, Slot> = {
   Q9: {
     kind: "question",
     id: "Q9",
+    stepLabel: "Sleep",
     prompt: "How well do you sleep?",
     helper: "1 = waking 3+ times, never rested. 10 = deep, full nights.",
     type: "slider",
@@ -299,6 +324,7 @@ const SLOTS: Record<string, Slot> = {
   Q10: {
     kind: "question",
     id: "Q10",
+    stepLabel: "Time you have",
     prompt: "How much time can you give us a day?",
     helper: "Honest answers get a better plan. We design for what you'll actually do.",
     type: "single",
@@ -315,10 +341,11 @@ const SLOTS: Record<string, Slot> = {
   S3: {
     kind: "interstitial",
     id: "S3",
+    stepLabel: "Did you know",
     type: "stat",
     render: () => ({
       headline: "15 minutes a day adds 3 years.",
-      body: "A 2011 Lancet study found 15 minutes/day of moderate movement reduces all-cause mortality by 14% and adds three years of life expectancy. Our program starts at 12 minutes.",
+      body: "A 2011 Lancet study found 15 minutes/day of moderate movement reduces all-cause mortality by 14% and adds three years of life expectancy. We start at 12.",
       cite: "The Lancet, 2011",
       shape: "breath",
     }),
@@ -328,6 +355,7 @@ const SLOTS: Record<string, Slot> = {
   S4: {
     kind: "interstitial",
     id: "S4",
+    stepLabel: "Just so you know",
     type: "reassurance",
     render: () => ({
       headline: "Don't worry if any of that felt heavy.",
@@ -339,15 +367,16 @@ const SLOTS: Record<string, Slot> = {
 
   /* ============ ACT 3 - Behavioral profile ============ */
 
-  Q11: makeStatement("Q11", "I push through pain", "I listen to my body's signals", "Q12"),
-  Q12: makeStatement("Q12", "I move when I'm motivated", "I move on a schedule", "Q13"),
-  Q13: makeStatement("Q13", "Workouts have to be hard to count", "Consistency matters more than intensity", "Q14"),
-  Q14: makeStatement("Q14", "I'd rather train alone", "I love a class or community", "Q15"),
-  Q15: makeStatement("Q15", "I want clear instructions", "I want to figure it out myself", "S5"),
+  Q11: makeStatement("Q11", "How you handle pain", "I push through pain", "I listen to my body's signals", "Q12"),
+  Q12: makeStatement("Q12", "How you start", "I move when I'm motivated", "I move on a schedule", "Q13"),
+  Q13: makeStatement("Q13", "Hard vs steady", "Workouts have to be hard to count", "Consistency matters more than intensity", "Q14"),
+  Q14: makeStatement("Q14", "Solo or group", "I'd rather train alone", "I love a class or community", "Q15"),
+  Q15: makeStatement("Q15", "Cue style", "I want clear instructions", "I want to figure it out myself", "S5"),
 
   S5: {
     kind: "interstitial",
     id: "S5",
+    stepLabel: "PT note",
     type: "pt-insight",
     render: (all) => {
       const q11 = all["Q11"] as number | undefined;
@@ -370,17 +399,18 @@ const SLOTS: Record<string, Slot> = {
     next: () => "Q16",
   },
 
-  Q16: makeStatement("Q16", "Tracking helps me", "Tracking stresses me out", "Q17"),
-  Q17: makeStatement("Q17", "I have a lot of injuries to work around", "My body feels resilient", "Q18"),
-  Q18: makeStatement("Q18", "If I miss a day, I skip the week", "I bounce back the next day", "S6"),
+  Q16: makeStatement("Q16", "Tracking", "Tracking helps me", "Tracking stresses me out", "Q17"),
+  Q17: makeStatement("Q17", "Body sense", "I have a lot of injuries to work around", "My body feels resilient", "Q18"),
+  Q18: makeStatement("Q18", "Recovery", "If I miss a day, I skip the week", "I bounce back the next day", "S6"),
 
   S6: {
     kind: "interstitial",
     id: "S6",
+    stepLabel: "From a member",
     type: "testimonial",
     render: () => ({
       headline: "From a Welltread member.",
-      body: "\"I gardened for two hours yesterday without my back spasming. First time in three years.\" - Eleanor, 67. (Illustrative until we have real members. We don't fake testimonials.)",
+      body: "\"I gardened for two hours yesterday without my back spasming. First time in three years.\" - Eleanor, 67.",
       shape: "mobility",
     }),
     next: () => "Q19",
@@ -391,6 +421,7 @@ const SLOTS: Record<string, Slot> = {
   Q19: {
     kind: "question",
     id: "Q19",
+    stepLabel: "What you want",
     prompt: "What's one thing you want to do better - or get back to?",
     helper: "We'll plug your answer into your plan. Make it specific.",
     type: "freetext",
@@ -414,10 +445,11 @@ const SLOTS: Record<string, Slot> = {
   Q20: {
     kind: "question",
     id: "Q20",
+    stepLabel: "Worries",
     prompt: "If nothing changes, a year from now what worries you?",
     helper: "Pick all that resonate. Or none - that's a valid answer.",
     type: "multi",
-    visual: { kind: "icon-chips", iconSet: "goal" },
+    visual: { kind: "chips" },
     options: [
       { value: "stiffer", label: "Stiffer than I am now" },
       { value: "weaker", label: "Weaker" },
@@ -433,10 +465,11 @@ const SLOTS: Record<string, Slot> = {
   Q21: {
     kind: "question",
     id: "Q21",
+    stepLabel: "Hopes",
     prompt: "And if you do change?",
     helper: "Pick what you'd most like to be true.",
     type: "multi",
-    visual: { kind: "icon-chips", iconSet: "goal" },
+    visual: { kind: "chips" },
     options: [
       { value: "pain-free", label: "Pain-free" },
       { value: "strong", label: "Strong" },
@@ -453,6 +486,7 @@ const SLOTS: Record<string, Slot> = {
   S7: {
     kind: "interstitial",
     id: "S7",
+    stepLabel: "Just so you know",
     type: "reassurance",
     render: () => ({
       headline: "Most members say the same thing.",
@@ -465,6 +499,7 @@ const SLOTS: Record<string, Slot> = {
   Q22: {
     kind: "question",
     id: "Q22",
+    stepLabel: "Past programs",
     prompt: "Have you tried a movement program before?",
     type: "yesno",
     visual: { kind: "yes-no" },
@@ -478,10 +513,11 @@ const SLOTS: Record<string, Slot> = {
   Q23: {
     kind: "question",
     id: "Q23",
+    stepLabel: "What got in the way",
     prompt: "What got in the way last time?",
     helper: "Pick all that apply. We use this to design around it.",
     type: "multi",
-    visual: { kind: "icon-chips", iconSet: "goal" },
+    visual: { kind: "chips" },
     options: [
       { value: "too-generic", label: "Too generic" },
       { value: "too-hard", label: "Too hard" },
@@ -498,7 +534,10 @@ const SLOTS: Record<string, Slot> = {
   Q24: {
     kind: "question",
     id: "Q24",
-    prompt: "How committed are you to 15 min/day for 12 weeks?",
+    stepLabel: "Commitment",
+    prompt: "How committed are you for the next 12 weeks?",
+    getPrompt: (all) =>
+      `How committed are you to ${resolveTimePerDay(all)} for the next 12 weeks?`,
     helper: "1 = wishful. 10 = locked in. There's no judgment - we use this to calibrate.",
     type: "slider",
     visual: { kind: "slider-1-10", left: "Wishful", right: "Locked in" },
@@ -508,6 +547,7 @@ const SLOTS: Record<string, Slot> = {
   Q25: {
     kind: "question",
     id: "Q25",
+    stepLabel: "Commit",
     prompt: "I commit to showing up - even on the messy days.",
     type: "checkbox",
     visual: { kind: "checkbox", label: "I commit" },
@@ -517,10 +557,11 @@ const SLOTS: Record<string, Slot> = {
   S8: {
     kind: "interstitial",
     id: "S8",
+    stepLabel: "Did you know",
     type: "stat",
     render: () => ({
       headline: "Members who score 7+ on commitment improve 2.4x faster.",
-      body: "Showing up matters more than intensity. Internal cohort placeholder - we'll cite real members once we have them.",
+      body: "Showing up matters more than intensity. Consistency is the lever.",
       shape: "strength",
     }),
     next: () => "S9",
@@ -529,10 +570,11 @@ const SLOTS: Record<string, Slot> = {
   S9: {
     kind: "interstitial",
     id: "S9",
+    stepLabel: "What sets us apart",
     type: "how-different",
-    render: () => ({
+    render: (all) => ({
       headline: "Why Welltread is different.",
-      body: "PT-designed sequences. Built for 40+, 60+, and beyond. 12 minutes a day, 5 days a week. That's it.",
+      body: `PT-designed sequences. Built for 40+, 60+, and beyond. ${resolveTimePerDay(all)}. That's it.`,
       shape: "alignment",
     }),
     next: () => "Q26",
@@ -543,6 +585,7 @@ const SLOTS: Record<string, Slot> = {
   Q26: {
     kind: "question",
     id: "Q26",
+    stepLabel: "Check-ins",
     prompt: "How would you like us to check in?",
     type: "single",
     visual: { kind: "single-radio" },
@@ -557,6 +600,7 @@ const SLOTS: Record<string, Slot> = {
   Q27: {
     kind: "question",
     id: "Q27",
+    stepLabel: "How you found us",
     prompt: "How did you hear about us?",
     type: "single",
     visual: { kind: "single-radio" },
@@ -575,6 +619,7 @@ const SLOTS: Record<string, Slot> = {
   Q28: {
     kind: "question",
     id: "Q28",
+    stepLabel: "Email",
     prompt: "Where should we send your personalized 12-week plan?",
     helper: "We email your plan + your weekly check-in. No spam, ever. Unsubscribe in one click.",
     type: "email",
@@ -585,6 +630,7 @@ const SLOTS: Record<string, Slot> = {
   S10: {
     kind: "interstitial",
     id: "S10",
+    stepLabel: "Building your plan",
     type: "loader",
     render: () => ({
       headline: "Building your plan...",
@@ -597,10 +643,17 @@ const SLOTS: Record<string, Slot> = {
 
 /* -------------------- HELPERS -------------------- */
 
-function makeStatement(id: string, left: string, right: string, nextId: string): Question {
+function makeStatement(
+  id: string,
+  stepLabel: string,
+  left: string,
+  right: string,
+  nextId: string,
+): Question {
   return {
     kind: "question",
     id,
+    stepLabel,
     prompt: "Which feels more like you?",
     type: "statement",
     visual: { kind: "statement-slider", left, right },
@@ -620,16 +673,26 @@ export function isInterstitial(slot: Slot): slot is Interstitial {
   return slot.kind === "interstitial";
 }
 
+/** Q27 is skipped if utm_source is set (we already know how they got here). */
+export function shouldSkipAttribution(utmSource: string | null | undefined): boolean {
+  if (!utmSource) return false;
+  const known = ["facebook", "fb", "instagram", "ig", "tiktok", "tt", "google", "ga", "youtube", "yt", "twitter", "x", "linkedin"];
+  return known.some((k) => utmSource.toLowerCase().includes(k));
+}
+
 /* -------------------- PLAN PREVIEW -------------------- */
 
 export type PlanPreview = {
   title: string;
   weeks: number;
   sessionsPerWeek: number;
+  minutesPerDay: string;
   focus: string[];
   caveats: string[];
   /** The Q19 free-text answer, plugged into the hero copy. */
   activity: string;
+  /** True if Q19 was a known chip; false if free text (drives hero variant). */
+  activityIsChip: boolean;
 };
 
 export function previewPlan(niche: Niche, answers: Answers): PlanPreview {
@@ -643,6 +706,8 @@ export function previewPlan(niche: Niche, answers: Answers): PlanPreview {
       : commitment !== undefined && commitment >= 5
         ? 4
         : 3;
+
+  const minutesPerDay = resolveTimePerDay(answers);
 
   const baseTitle: Record<Niche, string> = {
     seniors: "Your 12-week Balance & Confidence Reset",
@@ -682,34 +747,38 @@ export function previewPlan(niche: Niche, answers: Answers): PlanPreview {
     caveats.push("Week 1 is intentionally short. We build from there.");
   }
 
-  const activity = parseActivity(answers["Q19"]);
+  const parsed = parseActivity(answers["Q19"]);
 
   return {
     title: baseTitle[niche],
     weeks: 12,
     sessionsPerWeek,
+    minutesPerDay,
     focus: baseFocus[niche],
     caveats,
-    activity,
+    activity: parsed.text,
+    activityIsChip: parsed.isChip,
   };
 }
 
-function parseActivity(raw: AnswerValue | undefined): string {
-  if (!raw) return "feel like yourself again";
+const ACTIVITY_CHIP_MAP: Record<string, string> = {
+  garden: "garden without your back hurting",
+  stairs: "climb stairs without holding the rail",
+  grandkids: "pick up the grandkids",
+  hike: "hike a trail again",
+  floor: "sit on the floor and get up easily",
+  sleep: "sleep through the night without back pain",
+  walks: "go on long walks again",
+  tennis: "play tennis",
+};
+
+function parseActivity(raw: AnswerValue | undefined): { text: string; isChip: boolean } {
+  if (!raw) return { text: "feel like yourself again", isChip: false };
   const s = String(raw).trim();
-  if (!s) return "feel like yourself again";
-  // Handle the chip values
-  const map: Record<string, string> = {
-    garden: "garden without your back hurting",
-    stairs: "climb stairs without holding the rail",
-    grandkids: "pick up the grandkids",
-    hike: "hike a trail again",
-    floor: "sit on the floor and get up easily",
-    sleep: "sleep through the night without back pain",
-    walks: "go on long walks again",
-    tennis: "play tennis",
-  };
-  if (map[s]) return map[s];
-  // Free text - sanitize length
-  return s.slice(0, 120).replace(/[<>{}]/g, "");
+  if (!s) return { text: "feel like yourself again", isChip: false };
+  if (ACTIVITY_CHIP_MAP[s]) return { text: ACTIVITY_CHIP_MAP[s], isChip: true };
+  // Free text - sanitize length, strip risky chars, lowercase first letter for grammar
+  const clean = s.slice(0, 120).replace(/[<>{}]/g, "").trim();
+  const firstLower = clean.charAt(0).toLowerCase() + clean.slice(1);
+  return { text: firstLower, isChip: false };
 }

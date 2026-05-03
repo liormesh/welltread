@@ -85,12 +85,22 @@ export function PlanReveal() {
             <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-ink leading-[1.1]">
               {plan.title}
             </h1>
-            <p className="mt-6 text-xl text-ink-soft leading-relaxed">
-              By week 12, you&rsquo;ll be ready to{" "}
-              <span className="text-sage italic font-normal">{plan.activity}</span>.
-            </p>
+            {plan.activityIsChip ? (
+              <p className="mt-6 text-xl text-ink-soft leading-relaxed">
+                By week 12, you&rsquo;ll be ready to{" "}
+                <span className="text-sage italic font-normal">{plan.activity}</span>.
+              </p>
+            ) : (
+              <p className="mt-6 text-xl text-ink-soft leading-relaxed">
+                You told us:{" "}
+                <span className="text-sage italic font-normal">
+                  &ldquo;{plan.activity}&rdquo;
+                </span>
+                . By week 12, that&rsquo;s where we meet you.
+              </p>
+            )}
             <p className="mt-6 text-base text-ink-soft leading-relaxed">
-              {plan.weeks} weeks. {plan.sessionsPerWeek} sessions per week.
+              {plan.weeks} weeks. {plan.minutesPerDay}, {plan.sessionsPerWeek} sessions a week.
               Adjusts as your body responds.
             </p>
           </div>
@@ -156,7 +166,7 @@ export function PlanReveal() {
           />
           <Milestone
             week="Week 12"
-            title={plan.activity}
+            title={plan.activityIsChip ? plan.activity : "Where you wanted to be"}
             body="The thing you came here for. We meet you there."
             shape="alignment"
           />

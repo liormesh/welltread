@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect } from "react";
 import type { Question, AnswerValue } from "@/lib/quiz/definition";
-import { BodyMap } from "@/components/quiz/BodyMap";
 
 type Props = {
   question: Question;
+  promptText: string;
   value: AnswerValue | undefined;
   onSingle: (value: string) => void;
   onMulti: (value: string[]) => void;
@@ -16,6 +17,7 @@ type Props = {
 
 export function QuestionRenderer({
   question,
+  promptText,
   value,
   onSingle,
   onMulti,
@@ -29,14 +31,14 @@ export function QuestionRenderer({
     <div className="space-y-8">
       <div>
         <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-ink leading-tight">
-          {question.prompt}
+          {promptText}
         </h2>
         {question.helper && (
           <p className="mt-3 text-ink-soft leading-relaxed">{question.helper}</p>
         )}
       </div>
 
-      {v.kind === "icon-chips" && (
+      {v.kind === "chips" && (
         <ChipsRender
           options={question.options ?? []}
           isMulti={question.type === "multi"}
@@ -70,19 +72,11 @@ export function QuestionRenderer({
         />
       )}
 
-      {v.kind === "body-map" && (
-        <BodyMap
-          options={question.options ?? []}
-          value={(value as string[]) ?? []}
-          onChange={onMulti}
-        />
-      )}
-
       {v.kind === "slider-1-10" && (
         <Slider1to10
           left={v.left}
           right={v.right}
-          value={typeof value === "number" ? value : 5}
+          value={typeof value === "number" ? value : null}
           onChange={onSlider}
         />
       )}
@@ -127,7 +121,6 @@ export function QuestionRenderer({
         />
       )}
 
-      {/* Continue button - only for types that don't auto-advance on selection */}
       {needsContinue(question) && (
         <button
           type="button"
@@ -274,10 +267,10 @@ function PhotoCards({
             key={c.value}
             type="button"
             onClick={() => onSingle(c.value)}
-            className={`group rounded-2xl overflow-hidden border-2 transition-all ${
+            className={`group rounded-2xl overflow-hidden border transition-all ${
               selected
-                ? "border-sage shadow-md"
-                : "border-transparent hover:border-sage/40"
+                ? "border-sage bg-sage/5 ring-2 ring-sage/20"
+                : "border-line bg-paper hover:border-sage/40 hover:bg-paper-warm/30"
             }`}
           >
             <div className="aspect-[4/5] bg-paper-warm/30 overflow-hidden">
@@ -292,7 +285,7 @@ function PhotoCards({
             </div>
             <div
               className={`px-3 py-3 text-sm font-medium text-center ${
-                selected ? "bg-sage text-paper" : "bg-paper text-ink"
+                selected ? "text-sage" : "text-ink"
               }`}
             >
               {c.label}
@@ -322,10 +315,10 @@ function IconCards({
             key={c.value}
             type="button"
             onClick={() => onSingle(c.value)}
-            className={`rounded-2xl border-2 p-5 flex flex-col items-center gap-3 transition-all ${
+            className={`rounded-2xl border p-5 flex flex-col items-center gap-3 transition-all ${
               selected
-                ? "border-sage bg-sage/5"
-                : "border-line bg-paper hover:border-sage/40"
+                ? "border-sage bg-sage/5 ring-2 ring-sage/20"
+                : "border-line bg-paper hover:border-sage/40 hover:bg-paper-warm/30"
             }`}
           >
             <ActivityIcon
@@ -346,40 +339,86 @@ function IconCards({
   );
 }
 
+/**
+ * Activity icons. Designed to read at small sizes.
+ * Each is a simple recognizable pictogram in single-stroke sage.
+ */
 function ActivityIcon({ name, className }: { name: string; className?: string }) {
   const stroke = "currentColor";
+  const baseProps = {
+    fill: "none",
+    stroke,
+    strokeWidth: "1.6",
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
   switch (name) {
     case "chair":
+      // Person sitting on a chair - profile view
       return (
-        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 14v18h20V14" />
-          <path d="M14 32v10M34 32v10" />
-          <path d="M14 24h20" />
+        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} {...baseProps}>
+          {/* head */}
+          <circle cx="20" cy="12" r="3" />
+          {/* torso slumped forward */}
+          <path d="M20 15 L20 26 L28 26" />
+          {/* legs bent at knee */}
+          <path d="M28 26 L30 36 L36 36" />
+          {/* chair seat */}
+          <path d="M14 28 L32 28" />
+          {/* chair back */}
+          <path d="M14 28 L14 14" />
+          {/* chair legs */}
+          <path d="M16 28 L16 40 M30 28 L30 40" />
         </svg>
       );
+
     case "walk":
+      // Walking person - one foot forward, mid-stride
       return (
-        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="28" cy="10" r="3" />
-          <path d="M26 14l-4 8 4 6v10" />
-          <path d="M22 22l-6 4M30 28l4 6 6-2" />
+        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} {...baseProps}>
+          {/* head */}
+          <circle cx="24" cy="9" r="3" />
+          {/* torso */}
+          <path d="M24 13 L24 27" />
+          {/* arms - one forward one back */}
+          <path d="M24 17 L18 23 M24 17 L31 22" />
+          {/* legs - mid-stride */}
+          <path d="M24 27 L18 38 L17 42" />
+          <path d="M24 27 L30 35 L33 41" />
         </svg>
       );
+
     case "run":
+      // Runner - dynamic pose, leaning forward
       return (
-        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="30" cy="9" r="3" />
-          <path d="M28 14l-6 6 6 6 4 8" />
-          <path d="M22 20l-8 2M26 26l8 2" />
+        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} {...baseProps}>
+          {/* head */}
+          <circle cx="29" cy="9" r="3" />
+          {/* torso angled */}
+          <path d="M28 13 L21 25" />
+          {/* arms - swinging */}
+          <path d="M27 15 L34 19 M22 22 L14 24" />
+          {/* legs - one extended back, one bent forward */}
+          <path d="M21 25 L29 33 L36 33" />
+          <path d="M21 25 L13 32 L10 38" />
         </svg>
       );
+
     case "mountain":
+      // Mountain peak with sun - aspirational outdoor
       return (
-        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 38l12-20 8 12 6-8 14 16z" />
-          <path d="M16 18l-2-3" />
+        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} {...baseProps}>
+          {/* sun */}
+          <circle cx="35" cy="14" r="3" />
+          {/* mountain back */}
+          <path d="M5 38 L18 18 L26 30 L34 22 L43 38 Z" />
+          {/* snowcap */}
+          <path d="M16 22 L18 18 L20 22" />
+          <path d="M32 25 L34 22 L36 25" />
         </svg>
       );
+
     default:
       return null;
   }
@@ -393,14 +432,44 @@ function Slider1to10({
 }: {
   left: string;
   right: string;
-  value: number;
+  value: number | null;
   onChange: (v: number) => void;
 }) {
+  // Auto-set default of 5 on mount so user can confirm-by-clicking-Continue
+  useEffect(() => {
+    if (value === null) onChange(5);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const v = value ?? 5;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-baseline justify-between text-sm text-ink-soft">
         <span>{left}</span>
-        <span className="text-3xl font-semibold text-sage">{value}</span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => onChange(Math.max(1, v - 1))}
+            disabled={v <= 1}
+            aria-label="Decrease"
+            className="w-9 h-9 rounded-full border border-line bg-paper text-ink hover:border-sage hover:text-sage disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-lg leading-none"
+          >
+            −
+          </button>
+          <span className="text-3xl font-semibold text-sage tabular-nums w-8 text-center">
+            {v}
+          </span>
+          <button
+            type="button"
+            onClick={() => onChange(Math.min(10, v + 1))}
+            disabled={v >= 10}
+            aria-label="Increase"
+            className="w-9 h-9 rounded-full border border-line bg-paper text-ink hover:border-sage hover:text-sage disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-lg leading-none"
+          >
+            +
+          </button>
+        </div>
         <span>{right}</span>
       </div>
       <input
@@ -408,7 +477,7 @@ function Slider1to10({
         min={1}
         max={10}
         step={1}
-        value={value}
+        value={v}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full accent-sage h-2"
       />
@@ -432,7 +501,6 @@ function StatementSlider({
   value: number | null;
   onChange: (v: number) => void;
 }) {
-  // 4-point forced choice: 1, 2, 3, 4 (no neutral)
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
@@ -445,10 +513,10 @@ function StatementSlider({
       </div>
       <div className="grid grid-cols-4 gap-2">
         {[
-          { v: 1, label: "Strongly\nagree", side: "left" },
-          { v: 2, label: "Slightly\nagree", side: "left" },
-          { v: 3, label: "Slightly\nagree", side: "right" },
-          { v: 4, label: "Strongly\nagree", side: "right" },
+          { v: 1, label: "Strongly\nagree" },
+          { v: 2, label: "Slightly\nagree" },
+          { v: 3, label: "Slightly\nagree" },
+          { v: 4, label: "Strongly\nagree" },
         ].map((opt) => {
           const selected = value === opt.v;
           return (
@@ -468,7 +536,7 @@ function StatementSlider({
         })}
       </div>
       <p className="text-xs text-ink-soft/70 text-center">
-        No neutral. Pick the side that's slightly more you.
+        No neutral. Pick the side that&rsquo;s slightly more you.
       </p>
     </div>
   );
@@ -536,9 +604,9 @@ function YesNo({
           key={opt.v}
           type="button"
           onClick={() => onSingle(opt.v)}
-          className={`px-5 py-6 rounded-2xl border-2 text-lg font-medium transition-all ${
+          className={`px-5 py-6 rounded-2xl border text-lg font-medium transition-all ${
             value === opt.v
-              ? "border-sage bg-sage/5 text-sage"
+              ? "border-sage bg-sage/5 text-sage ring-2 ring-sage/20"
               : "border-line bg-paper text-ink hover:border-sage/50"
           }`}
         >
@@ -562,9 +630,9 @@ function CheckboxRender({
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className={`w-full flex items-center gap-4 p-6 rounded-2xl border-2 text-left transition-all ${
+      className={`w-full flex items-center gap-4 p-6 rounded-2xl border text-left transition-all ${
         checked
-          ? "border-sage bg-sage/5"
+          ? "border-sage bg-sage/5 ring-2 ring-sage/20"
           : "border-line bg-paper hover:border-sage/40"
       }`}
     >

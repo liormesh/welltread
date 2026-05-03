@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { Interstitial, InterstitialContent } from "@/lib/quiz/definition";
 
@@ -65,6 +64,10 @@ function labelFor(t: Interstitial["type"]): string {
   }
 }
 
+/**
+ * Cinematic loader - animated breath rings + rotating copy.
+ * Auto-advances when copy completes.
+ */
 function LoaderScreen({
   content,
   onDone,
@@ -77,26 +80,20 @@ function LoaderScreen({
 
   useEffect(() => {
     if (step >= messages.length) {
-      const t = setTimeout(onDone, 600);
+      const t = setTimeout(onDone, 700);
       return () => clearTimeout(t);
     }
-    const t = setTimeout(() => setStep(step + 1), 1300);
+    const t = setTimeout(() => setStep(step + 1), 1500);
     return () => clearTimeout(t);
   }, [step, messages.length, onDone]);
 
   const progress = Math.min(100, ((step + 1) / messages.length) * 100);
 
   return (
-    <div className="min-h-[400px] flex items-center justify-center">
+    <div className="min-h-[460px] flex items-center justify-center">
       <div className="text-center max-w-md">
-        <div className="mx-auto w-32 h-32 mb-8 relative">
-          <Image
-            src="/shapes/breath.png"
-            alt=""
-            fill
-            unoptimized
-            className="object-contain animate-pulse"
-          />
+        <div className="mx-auto mb-10">
+          <BreathPulse />
         </div>
         <h2 className="text-2xl font-semibold tracking-tight text-ink mb-6">
           {content.headline}
@@ -123,5 +120,151 @@ function LoaderScreen({
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Animated breath SVG - concentric rings expanding outward, looping.
+ * Transparent background. Pure CSS animation via SVG SMIL.
+ */
+function BreathPulse() {
+  return (
+    <svg
+      viewBox="0 0 160 160"
+      className="w-32 h-32 sm:w-40 sm:h-40"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Breath cycle animation"
+    >
+      {/* Inner solid dot */}
+      <circle cx="80" cy="80" r="4" fill="#2D4F4A" opacity="0.9">
+        <animate
+          attributeName="r"
+          values="3;5;3"
+          dur="4s"
+          repeatCount="indefinite"
+          calcMode="spline"
+          keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+          keyTimes="0; 0.5; 1"
+        />
+      </circle>
+
+      {/* Ring 1 */}
+      <circle
+        cx="80"
+        cy="80"
+        r="20"
+        fill="none"
+        stroke="#2D4F4A"
+        strokeWidth="1.2"
+        opacity="0.7"
+      >
+        <animate
+          attributeName="r"
+          values="14;26;14"
+          dur="4s"
+          begin="0s"
+          repeatCount="indefinite"
+          calcMode="spline"
+          keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+          keyTimes="0; 0.5; 1"
+        />
+        <animate
+          attributeName="opacity"
+          values="0.85;0.55;0.85"
+          dur="4s"
+          repeatCount="indefinite"
+          keyTimes="0; 0.5; 1"
+        />
+      </circle>
+
+      {/* Ring 2 */}
+      <circle
+        cx="80"
+        cy="80"
+        r="36"
+        fill="none"
+        stroke="#2D4F4A"
+        strokeWidth="1.0"
+        opacity="0.5"
+      >
+        <animate
+          attributeName="r"
+          values="28;46;28"
+          dur="4s"
+          begin="0s"
+          repeatCount="indefinite"
+          calcMode="spline"
+          keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+          keyTimes="0; 0.5; 1"
+        />
+        <animate
+          attributeName="opacity"
+          values="0.6;0.3;0.6"
+          dur="4s"
+          repeatCount="indefinite"
+          keyTimes="0; 0.5; 1"
+        />
+      </circle>
+
+      {/* Ring 3 */}
+      <circle
+        cx="80"
+        cy="80"
+        r="54"
+        fill="none"
+        stroke="#2D4F4A"
+        strokeWidth="0.8"
+        opacity="0.3"
+        strokeDasharray="2 4"
+      >
+        <animate
+          attributeName="r"
+          values="44;66;44"
+          dur="4s"
+          begin="0s"
+          repeatCount="indefinite"
+          calcMode="spline"
+          keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+          keyTimes="0; 0.5; 1"
+        />
+        <animate
+          attributeName="opacity"
+          values="0.4;0.15;0.4"
+          dur="4s"
+          repeatCount="indefinite"
+          keyTimes="0; 0.5; 1"
+        />
+      </circle>
+
+      {/* Ring 4 - clay accent */}
+      <circle
+        cx="80"
+        cy="80"
+        r="72"
+        fill="none"
+        stroke="#C18C5D"
+        strokeWidth="0.6"
+        opacity="0.25"
+        strokeDasharray="1 5"
+      >
+        <animate
+          attributeName="r"
+          values="60;78;60"
+          dur="4s"
+          begin="0s"
+          repeatCount="indefinite"
+          calcMode="spline"
+          keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+          keyTimes="0; 0.5; 1"
+        />
+        <animate
+          attributeName="opacity"
+          values="0.3;0.08;0.3"
+          dur="4s"
+          repeatCount="indefinite"
+          keyTimes="0; 0.5; 1"
+        />
+      </circle>
+    </svg>
   );
 }

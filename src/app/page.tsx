@@ -41,8 +41,8 @@ export default function Home() {
 
             <div className="rounded-3xl overflow-hidden border border-line bg-paper-warm/30">
               <Image
-                src="/cast/group_hero.png"
-                alt="Welltread members - Maria, David, James, Eleanor"
+                src="/cast/group_mat_catcow.png"
+                alt="Welltread members practicing a seated mobility flow together"
                 width={1280}
                 height={720}
                 priority

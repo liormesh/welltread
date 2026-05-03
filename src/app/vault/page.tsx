@@ -59,6 +59,12 @@ export default function VaultIndex() {
             title="Quiz flow"
             body="The full questionnaire. 28 Q's, 5 acts, branching, conditional skips, dynamic stat injection."
           />
+          <Card
+            href="/vault/ui-rules"
+            eyebrow="10"
+            title="UI rules"
+            body="Selector style rules, icon vocabulary, imagery axiom, decision tree."
+          />
         </div>
       </section>
 
