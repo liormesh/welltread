@@ -4,7 +4,12 @@
 
 Personalized movement programs for adults 40+. Multi-niche mobility platform delivered via quiz-funnel app. Single backend serves Senior Mobility 60+, Posture & Back 40+, and (planned) postpartum / pelvic floor / GLP-1 companion.
 
-**State (2026-05-03):** acquisition funnel complete. Quiz v2 (28 questions, 5 acts) live. Plan reveal with Q19 AI-normalized hero copy. Vault complete. Stripe queued. Workout course not yet built.
+**State (2026-05-03 end-of-session):**
+- **Acquisition layer complete.** welltread.co live with home + niche LPs, 28-question quiz v2, AI-normalized plan reveal with cast-matched hero, Stripe-stubbed paywall.
+- **Product app (welltread.app) functional in demo mode.** `/app/today`, `/app/session/[id]` with 5-second transition + countdown ring + "this hurts" Phase 1 swap, `/app/done` check-in writing to `daily_completions`, `/app/week`, `/app/profile`, `/app/library` stub. Magic-link + password auth via Supabase. Demo user: `info@welltread.co` / `123abc`.
+- **Email pipeline live.** Resend domain `welltread.co` verified (DKIM + SPF + DMARC on Cloudflare). 16 templates with niche-lead cast headers. 8 acquisition emails wired to GH Actions cron (15-min tick).
+- **Vault complete.** 17 stakeholder-facing pages at welltread.co/vault.
+- **Blocked on Lior:** Stripe verification for US LLC, real movement videos (Veo thread), ElevenLabs voice IDs.
 
 ## Stack
 
@@ -110,8 +115,10 @@ Definitions in `src/lib/visual/shapes.ts`. PNG files in `public/shapes/`. Six sh
 - `VAULT_AUTH_TOKEN` - vault password
 - `SUPABASE_SERVICE_ROLE_KEY` - server-side DB writes
 - `ANTHROPIC_API_KEY` - Q19 normalization
+- `RESEND_API_KEY` - email send
+- `EMAIL_TOKEN_SECRET` - HMAC for resume tokens (re-engagement emails)
 
-Future: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_*`, `RESEND_API_KEY`.
+Future: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_*`.
 
 ## Active niches
 
@@ -125,14 +132,18 @@ Future: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_*`, `RESE
 
 ## Next-steps queue (in order)
 
-1. **Stripe + $1 trial** ([`/vault/trial-flow`](https://welltread.co/vault/trial-flow)) - awaiting Stripe creds for the US LLC
-2. **Workout course v1** content production - cast + course locked in KB; awaiting Veo 3.1 video generation
-3. **Hybrid app on welltread.app** ([`/vault/product-framework`](https://welltread.co/vault/product-framework))
-4. **Email sequences** (acquisition + payment lifecycle) via Resend
-5. **Magic resume tokens** for cart abandonment recovery (Phase 2 of trial flow)
-6. **Add `/postpartum`, `/pelvic-floor`, `/glp1` LPs** when product expansion warrants
-7. **Server-side event router** at `/api/track/event` for Meta CAPI + TikTok Events API
-8. **$500 Meta classification kill-test** before scale spend
+**Blocked on Lior (external):**
+1. **Stripe verification** for the US LLC → unlocks trial flow (subsystems 09-11), welcome email, real account provisioning
+2. **Movement videos** from Veo / PT studio → swaps `sample-plan.ts` with real content
+3. **ElevenLabs voice IDs** for the 4 cast → unlocks audio narration
+
+**Unblocked, ready to build (recommended order):**
+4. **Content schema + assignment engine** (subsystems 01, 12, 13) - 7 new tables, deterministic assignment, admin upload pipeline. Stops `sample-plan.ts` from accumulating debt
+5. **Retention loop** - weekly check-in screen, Sunday-mode for /app/today, week 4/8 re-eval, week 12 graduation. Wires to existing `weekly_checkins` table
+6. **Marketing readiness** - Meta Pixel + CAPI server-side router, TikTok Events API, PWA install prompt + manifest, performance audit
+7. **$500 Meta classification kill-test** - run after Stripe + content land
+8. **Magic resume tokens** for cart abandonment recovery (Phase 2 of trial flow)
+9. **Phase 2 movement swap** ([Trello card](https://trello.com/c/hWHWjQTN)) - requires content schema + real regression chains
 
 ## Linked KB
 

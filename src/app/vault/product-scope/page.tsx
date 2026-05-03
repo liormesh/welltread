@@ -30,6 +30,20 @@ export default function ProductScope() {
           Building the product means shipping these. Most are small (1-2
           days). A few are not (session player, content authoring).
         </p>
+        <div className="rounded-2xl border border-line bg-paper-warm/30 p-5 mb-8">
+          <p className="text-xs uppercase tracking-[0.2em] text-clay mb-2">
+            Status (2026-05-03)
+          </p>
+          <p className="text-sm text-ink leading-relaxed">
+            Subsystems 02, 03, 04, 05, 06, 07, 11 (stub), 12 (hardcoded), 14 are
+            <strong> shipped</strong>. The session player has the full Phase 1
+            arc including pre-roll, transition with countdown, "this hurts"
+            modal with Phase 1 swap (cue override + flag log). Subsystem 01
+            (full content schema) and 13 (admin authoring) are <strong>queued</strong> as
+            the next priority. Subsystems 09 + 10 (Stripe checkout + webhooks)
+            are <strong>blocked on Stripe verification for the US LLC</strong>.
+          </p>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <Sub
             n="01"
