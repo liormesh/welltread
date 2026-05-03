@@ -66,6 +66,51 @@ The wordmark renders natively per platform — no font file to ship.
 | Use symbol-only at favicon size | Squeeze the full lockup below 96px wide |
 | Use mono variant for single-color print | Apply gradients, shadows, or effects |
 
+## Social Account Avatars
+
+Square format, sage background, paper-colored mark — the same canvas as the apple touch icon, scaled. Use the **squared variant with the sage fill** (not the transparent symbol) for any social profile picture. A transparent mark on a platform's default-color avatar circle reads as broken or unfinished.
+
+| Platform | Recommended source | File |
+|---|---|---|
+| Instagram | 1080×1080 | [`social/avatar-1080.png`](social/avatar-1080.png) |
+| Facebook (page + personal) | 1080×1080 | [`social/avatar-1080.png`](social/avatar-1080.png) |
+| LinkedIn (company) | 400×400 | [`social/avatar-400.png`](social/avatar-400.png) |
+| LinkedIn (personal) | 400×400 | [`social/avatar-400.png`](social/avatar-400.png) |
+| X / Twitter | 400×400 | [`social/avatar-400.png`](social/avatar-400.png) |
+| YouTube | 800×800 | [`social/avatar-800.png`](social/avatar-800.png) |
+| TikTok | 400×400 (200 displayed) | [`social/avatar-400.png`](social/avatar-400.png) |
+| Pinterest | 800×800 | [`social/avatar-800.png`](social/avatar-800.png) |
+| Threads / Bluesky / Mastodon | 400×400 | [`social/avatar-400.png`](social/avatar-400.png) |
+
+**Notes:**
+- All avatars are square and rendered on solid sage `#2d4f4a`. Most platforms display avatars in a circular crop — the mark is centered with safe-zone padding so it survives the crop.
+- Do not upload the transparent symbol-only SVG as a social avatar; the platform default background will undermine the mark.
+- For verified-platform display name, use "Welltread" (capitalized W). For handle, prefer `@welltread` where available; fallback `@welltreadhq`.
+
+## App Store Icons
+
+For when Welltread ships as a native app or PWA on stores. The app store icon is also derived from the squared sage canvas — same construction as the social avatar but at the platform-specified resolution, no transparency.
+
+| Store | Size | Format | File |
+|---|---|---|---|
+| iOS App Store | 1024×1024 | PNG, no transparency, no rounded corners (Apple applies them) | [`app-store/ios-app-icon-1024.png`](app-store/ios-app-icon-1024.png) |
+| Google Play Store | 512×512 | PNG, no transparency | [`app-store/play-icon-512.png`](app-store/play-icon-512.png) |
+| Google Play Adaptive | 512×512 | PNG, content within inner 80% safe zone | [`app-store/play-icon-maskable-512.png`](app-store/play-icon-maskable-512.png) |
+
+**Construction rules:**
+- Mark on solid sage `#2d4f4a` background, paper-colored dashes
+- No transparency, no shadows, no gradients — flat per platform guidelines
+- For iOS specifically: do NOT round the corners or add the iOS gloss; the platform applies these
+- For Google Play adaptive icons: the entire icon must fill 512×512 with the mark contained in the inner 409×409 safe zone (already configured in the maskable variant)
+
+## Open Graph / Social Share Card
+
+For link previews on Slack, Twitter/X, Facebook, LinkedIn, iMessage. Single 1200×630 PNG with horizontal lockup centered on cream paper + tagline.
+
+- File: [`og/og-image.png`](og/og-image.png) (master SVG: [`og/og-image.svg`](og/og-image.svg))
+- Wired in `src/app/layout.tsx` metadata via `openGraph.images` and `twitter.images`
+- For section-specific share cards (e.g., a blog post, a niche LP), generate a variant with the page-specific headline replacing the default tagline. Keep the lockup placement and the cream/sage palette identical.
+
 ## Implementation in Next.js
 
 Drop these files into `app/` for Next.js App Router auto-wiring:

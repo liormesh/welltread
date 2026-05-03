@@ -17,6 +17,20 @@ export const metadata: Metadata = {
     url: "https://welltread.co",
     siteName: "Welltread",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Welltread - personalized movement programs for the body you have today.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Welltread",
+    description: "Personalized movement programs, every step considered.",
+    images: ["/og-image.png"],
   },
 };
 
