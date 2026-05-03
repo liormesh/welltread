@@ -2,10 +2,10 @@ import Link from "next/link";
 import { AppHeader } from "@/components/app/AppHeader";
 import { SignOutButton } from "@/components/app/SignOutButton";
 import { SAMPLE_USER } from "@/lib/app/sample-plan";
-import { getCurrentProfile } from "@/lib/supabase/auth";
+import { requireProfile } from "@/lib/supabase/auth";
 
 export default async function Profile() {
-  const profile = await getCurrentProfile();
+  const profile = await requireProfile();
   const firstName = profile?.full_name?.split(" ")[0] ?? profile?.display_name ?? SAMPLE_USER.firstName;
 
   return (

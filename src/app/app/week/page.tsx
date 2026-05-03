@@ -1,7 +1,9 @@
 import { AppHeader } from "@/components/app/AppHeader";
 import { SAMPLE_WEEK, SAMPLE_USER } from "@/lib/app/sample-plan";
+import { requireUser } from "@/lib/supabase/auth";
 
-export default function Week() {
+export default async function Week() {
+  await requireUser();
   return (
     <>
       <AppHeader title={`Week ${SAMPLE_USER.weekNumber}`} />

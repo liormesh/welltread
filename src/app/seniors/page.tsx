@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { leadCastFor } from "@/lib/visual/cast";
 
 export const metadata = {
   title: "Senior Mobility - Welltread",
@@ -10,6 +11,7 @@ export const metadata = {
 };
 
 export default function Seniors() {
+  const lead = leadCastFor("seniors");
   return (
     <>
       <Header />
@@ -46,8 +48,8 @@ export default function Seniors() {
             </div>
             <div className="rounded-3xl overflow-hidden border border-line bg-paper-warm/30">
               <Image
-                src="/cast/eleanor.png"
-                alt="Eleanor, 67 - Welltread senior member"
+                src={lead.canonicalImage}
+                alt={`${lead.name}, ${lead.age} - Welltread senior member`}
                 width={420}
                 height={525}
                 priority

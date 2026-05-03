@@ -1,24 +1,21 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createSupabaseMiddlewareClient } from "@/lib/supabase/auth";
 
 const VAULT_COOKIE = "wt_vault_auth";
 const APP_HOSTS = new Set(["welltread.app", "www.welltread.app"]);
 
-const PUBLIC_APP_PATHS = new Set([
-  "/app/login",
-  "/app/auth/callback",
-]);
-
 /**
- * Edge middleware:
+ * Edge middleware. Two responsibilities only:
  *
- * 1. **Host routing for welltread.app**: rewrites /<path> → /app/<path>
- * 2. **Vault gate**: cookie-based password gate for /vault/* on .co
- * 3. **App auth gate**: Supabase session check for /app/*
- *    - /app/login + /app/auth/callback are public
- *    - everything else requires an authenticated user
+ * 1. **Host routing**: rewrite welltread.app/* → /app/* so the .app domain
+ *    serves the authenticated product layer cleanly while .co serves
+ *    marketing + quiz + paywall + vault.
+ * 2. **Vault gate**: cookie-based password gate for /vault/* on .co.
+ *
+ * App auth is NOT enforced here. Each /app/* page does its own auth check
+ * via the SSR Supabase client (which can read AND write the refresh cookie
+ * cleanly without the rewrite-cookie-loss issue middleware has).
  */
-export async function middleware(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const { pathname } = url;
   const host = req.headers.get("host")?.toLowerCase() ?? "";
@@ -40,10 +37,9 @@ export async function middleware(req: NextRequest) {
     if (!passThrough) {
       const target = pathname === "/" ? "/app/today" : `/app${pathname}`;
       url.pathname = target;
-      // After rewriting, fall through to the auth gate below using the rewritten path
-      const rewritten = NextResponse.rewrite(url);
-      return await applyAuthGate(req, rewritten, target);
+      return NextResponse.rewrite(url);
     }
+    return NextResponse.next();
   }
 
   // -------- 2. Vault gate (welltread.co only) --------
@@ -67,55 +63,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // -------- 3. App auth gate (when accessed directly via /app/*) --------
-  if (pathname.startsWith("/app")) {
-    const baseRes = NextResponse.next();
-    return await applyAuthGate(req, baseRes, pathname);
-  }
-
   return NextResponse.next();
-}
-
-async function applyAuthGate(
-  req: NextRequest,
-  baseRes: NextResponse,
-  resolvedPath: string,
-) {
-  // Public paths inside /app
-  if (
-    PUBLIC_APP_PATHS.has(resolvedPath) ||
-    resolvedPath.startsWith("/app/auth/")
-  ) {
-    return baseRes;
-  }
-
-  try {
-    const supabase = createSupabaseMiddlewareClient(req, baseRes);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      // Compute the visible-to-user redirect target (the actual URL they typed)
-      const redirectFrom = req.nextUrl.pathname.startsWith("/app/")
-        ? req.nextUrl.pathname.replace(/^\/app/, "")
-        : req.nextUrl.pathname;
-      const loginUrl = req.nextUrl.clone();
-      loginUrl.pathname = "/app/login";
-      loginUrl.search = "";
-      if (redirectFrom && redirectFrom !== "/" && redirectFrom !== "/login") {
-        loginUrl.searchParams.set("redirect", `/app${redirectFrom}`);
-      }
-      return NextResponse.redirect(loginUrl);
-    }
-  } catch (err) {
-    // If Supabase client creation fails (env not set), fail open in dev,
-    // closed in prod. For now: allow through with a server-side warning
-    // so we don't break local development.
-    console.warn("[middleware] auth gate skipped:", err);
-  }
-
-  return baseRes;
 }
 
 export const config = {

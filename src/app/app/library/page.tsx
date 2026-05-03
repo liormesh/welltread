@@ -1,6 +1,8 @@
 import { AppHeader } from "@/components/app/AppHeader";
+import { requireUser } from "@/lib/supabase/auth";
 
-export default function Library() {
+export default async function Library() {
+  await requireUser();
   return (
     <>
       <AppHeader title="Library" />

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { leadCastFor } from "@/lib/visual/cast";
 
 export const metadata = {
   title: "Posture & Back, 40+ - Welltread",
@@ -10,6 +11,7 @@ export const metadata = {
 };
 
 export default function Posture() {
+  const lead = leadCastFor("posture", "male");
   return (
     <>
       <Header />
@@ -46,8 +48,8 @@ export default function Posture() {
             </div>
             <div className="rounded-3xl overflow-hidden border border-line bg-paper-warm/30">
               <Image
-                src="/cast/david.png"
-                alt="David, 47 - Welltread posture & back member"
+                src={lead.canonicalImage}
+                alt={`${lead.name}, ${lead.age} - Welltread posture & back member`}
                 width={420}
                 height={525}
                 priority

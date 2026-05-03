@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import { AppHeader } from "@/components/app/AppHeader";
 import { DoneCheckin } from "@/components/app/DoneCheckin";
+import { requireUser } from "@/lib/supabase/auth";
 
-export default function Done() {
+export default async function Done() {
+  await requireUser();
   return (
     <>
       <AppHeader title="" subdued />

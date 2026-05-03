@@ -1,26 +1,18 @@
 /**
- * Supabase Auth - SSR helpers using @supabase/ssr.
+ * Supabase Auth - SSR helpers.
  *
- * Three flavors of client:
- *  - server-component:  read-only Supabase client for RSC. Reads cookies.
- *  - server-action:     read-write client for route handlers + server actions. Reads + writes cookies.
- *  - middleware:        custom because middleware uses NextResponse to set cookies.
- *  - browser:           lives in src/lib/supabase/browser.ts
- *
- * All clients use the public anon key; auth context is carried via the user's
- * session cookie (HttpOnly, signed by Supabase, 1-hour TTL with refresh).
+ * Page-level auth: each /app/* page calls requireUser() or requireProfile().
+ * Auth no longer lives in middleware (caused cookie-loss issues with rewrites).
  */
 
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import type { NextRequest, NextResponse } from "next/server";
 
 const SUPABASE_URL = "https://xzjwbrtvxlluwjkjsmgr.supabase.co";
 
-/**
- * For server actions and route handlers - can read AND write cookies.
- * Must be called inside a request lifecycle.
- */
+/** For server actions and route handlers. Reads + writes cookies. */
 export async function createSupabaseRouteClient() {
   const cookieStore = await cookies();
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -35,16 +27,14 @@ export async function createSupabaseRouteClient() {
             cookieStore.set(name, value, options);
           });
         } catch {
-          /* ignore - happens in RSC where cookies are read-only */
+          /* RSC contexts where cookies are read-only */
         }
       },
     },
   });
 }
 
-/**
- * For middleware - reads cookies from NextRequest, writes to NextResponse.
- */
+/** For middleware - reserved for future, currently unused since auth moved to pages. */
 export function createSupabaseMiddlewareClient(
   req: NextRequest,
   res: NextResponse,
@@ -64,7 +54,7 @@ export function createSupabaseMiddlewareClient(
   });
 }
 
-/** Resolve the current authenticated user (or null). For RSC + route handlers. */
+/** Resolve the current user (or null). Doesn't redirect. */
 export async function getCurrentUser() {
   const supabase = await createSupabaseRouteClient();
   const {
@@ -73,10 +63,7 @@ export async function getCurrentUser() {
   return user;
 }
 
-/**
- * Resolve the profile row for the current authenticated user.
- * Returns null if not authed or profile not yet provisioned.
- */
+/** Resolve the current profile row (or null). Doesn't redirect. */
 export async function getCurrentProfile() {
   const supabase = await createSupabaseRouteClient();
   const {
@@ -88,5 +75,23 @@ export async function getCurrentProfile() {
     .select("*")
     .eq("auth_user_id", user.id)
     .maybeSingle();
+  return profile;
+}
+
+/** Page-level guard. Redirects to /app/login (or .co/quiz for cold visitors) if unauthed. */
+export async function requireUser(opts?: { coldRedirect?: string }) {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect(opts?.coldRedirect ?? "/app/login");
+  }
+  return user;
+}
+
+/** Page-level guard for routes that need a fully-provisioned profile. */
+export async function requireProfile() {
+  const profile = await getCurrentProfile();
+  if (!profile) {
+    redirect("/app/login");
+  }
   return profile;
 }

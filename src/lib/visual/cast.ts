@@ -138,16 +138,36 @@ export function castForSession(niche: Niche, sessionNumber: number): CastMember 
 }
 
 /**
- * Lead character for top-of-funnel + first-app-open hero. Niche-adjusted.
- * (The session-by-session rotation does NOT change per niche; only the lead.)
+ * Lead character for top-of-funnel hero, plan-reveal portrait, welcome
+ * email, and re-engagement email voice. Niche + gender adjusted.
+ *
+ * The relatable-imagery axiom (per `feedback_aspirational_vs_relatable.md`)
+ * says match the user's demographic. So:
+ *
+ *   - Senior + female  → Eleanor
+ *   - Senior + male    → James
+ *   - Posture + female → Maria
+ *   - Posture + male   → David
+ *   - General + female → Maria (default warmth)
+ *   - General + male   → David (default peer)
+ *
+ * Gender unspecified (LP / pre-quiz, or user picked "prefer not to say"):
+ * fall back to the niche's default anchor (a female cast member, since
+ * 40+/60+ wellness skews majority female).
+ *
+ * The session-by-session rotation does NOT change per niche or gender; only
+ * the lead does.
  */
-export function leadCastFor(niche: Niche): CastMember {
+export type GenderInput = "female" | "male" | "skip" | undefined | null;
+
+export function leadCastFor(niche: Niche, gender?: GenderInput): CastMember {
+  const isMale = gender === "male";
   switch (niche) {
     case "seniors":
-      return CAST.eleanor;
+      return isMale ? CAST.james : CAST.eleanor;
     case "posture":
-      return CAST.david;
+      return isMale ? CAST.david : CAST.maria;
     default:
-      return CAST.maria;
+      return isMale ? CAST.david : CAST.maria;
   }
 }

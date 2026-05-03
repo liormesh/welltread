@@ -1,12 +1,19 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/app/LoginForm";
+import { getCurrentUser } from "@/lib/supabase/auth";
 
 export const metadata = {
   title: "Sign in - Welltread",
   robots: { index: false, follow: false, nocache: true },
 };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  // Already signed in? Skip the login form.
+  const user = await getCurrentUser();
+  if (user) {
+    redirect("/app/today");
+  }
   return (
     <main className="min-h-screen bg-paper flex items-center justify-center px-6">
       <div className="w-full max-w-md py-12">

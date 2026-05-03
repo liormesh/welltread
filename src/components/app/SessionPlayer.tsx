@@ -30,7 +30,6 @@ export function SessionPlayer({ session }: { session: Session }) {
     session.movements[0]?.durationSeconds ?? 0,
   );
   const [paused, setPaused] = useState(false);
-  const [hurtsRegion, setHurtsRegion] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const movement = session.movements[movementIndex];
@@ -78,11 +77,21 @@ export function SessionPlayer({ session }: { session: Session }) {
     return () => clearTimeout(t);
   }, [phase, paused, secondsRemaining, isLast]);
 
-  // Done auto-advance to /app/done
+  // Done auto-advance.
+  // If the user is repeating an already-completed session (?repeat=1), skip
+  // the check-in - they already logged it once today. Send them straight back
+  // to /app/today.
   useEffect(() => {
     if (phase !== "done") return;
     const t = setTimeout(() => {
-      router.push(`/app/done?sid=${session.id}`);
+      const isRepeat =
+        typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("repeat") === "1";
+      if (isRepeat) {
+        router.push("/app/today");
+      } else {
+        router.push(`/app/done?sid=${session.id}`);
+      }
     }, 2200);
     return () => clearTimeout(t);
   }, [phase, router, session.id]);
@@ -104,20 +113,55 @@ export function SessionPlayer({ session }: { session: Session }) {
     else setPhase("transition");
   }
 
+  const [hurtsCueOverride, setHurtsCueOverride] = useState<string | null>(null);
+
   function handleHurts() {
     setPaused(true);
     setPhase("hurts");
   }
 
-  function handleHurtsContinue() {
-    setHurtsRegion(null);
+  async function handleHurtsContinue(regions: string[]) {
+    if (!movement || regions.length === 0) {
+      handleHurtsCancel();
+      return;
+    }
+
+    // Phase 1: log + receive a cue override. The video stays the same; the
+    // cue text changes to a softer instruction.
+    try {
+      const res = await fetch("/api/app/movement/swap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: session.id,
+          movementId: movement.id,
+          movementName: movement.name,
+          regions,
+        }),
+      });
+      if (res.ok) {
+        const data = (await res.json().catch(() => null)) as
+          | { cueOverlay?: string; durationSeconds?: number }
+          | null;
+        if (data?.cueOverlay) {
+          setHurtsCueOverride(data.cueOverlay);
+          // If the swap returns a new duration, reset the countdown.
+          if (data.durationSeconds && data.durationSeconds > 0) {
+            setSecondsRemaining(data.durationSeconds);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[swap] failed", err);
+    }
+
     setPaused(false);
     setPhase("movement");
   }
 
   function handleHurtsCancel() {
-    setHurtsRegion(null);
     setPaused(false);
+    setHurtsCueOverride(null);
     setPhase("movement");
   }
 
@@ -175,7 +219,7 @@ export function SessionPlayer({ session }: { session: Session }) {
               {movement.name}
             </p>
             <p className="mt-2 text-paper text-2xl font-semibold leading-snug max-w-[80%]">
-              {movement.cue}
+              {hurtsCueOverride ?? movement.cue}
             </p>
             <div className="mt-4 flex items-baseline justify-between">
               <span className="text-paper/60 text-xs">
@@ -263,8 +307,6 @@ export function SessionPlayer({ session }: { session: Session }) {
       {/* HURTS MODAL */}
       {phase === "hurts" && (
         <HurtsModal
-          selected={hurtsRegion}
-          onSelect={setHurtsRegion}
           onContinue={handleHurtsContinue}
           onCancel={handleHurtsCancel}
         />
@@ -395,26 +437,40 @@ function ProgressDots({
   );
 }
 
+/**
+ * Hurts modal - mirrors the quiz Q5 ("Where do you feel stiffness or pain?")
+ * chip pattern. Multi-select chips, "None" toggle, sage-on-paper styling.
+ *
+ * Same vocabulary as the quiz so the user feels familiar.
+ */
 function HurtsModal({
-  selected,
-  onSelect,
   onContinue,
   onCancel,
 }: {
-  selected: string | null;
-  onSelect: (region: string) => void;
-  onContinue: () => void;
+  onContinue: (regions: string[]) => void;
   onCancel: () => void;
 }) {
   const regions = [
-    "Lower back",
-    "Knees",
-    "Hips",
-    "Shoulders",
-    "Neck",
-    "Wrists",
-    "Other",
+    { value: "neck", label: "Neck" },
+    { value: "shoulders", label: "Shoulders" },
+    { value: "upper-back", label: "Upper back" },
+    { value: "lower-back", label: "Lower back" },
+    { value: "hips", label: "Hips" },
+    { value: "knees", label: "Knees" },
+    { value: "ankles", label: "Feet or ankles" },
+    { value: "wrists", label: "Wrists or hands" },
   ];
+
+  const [selected, setSelected] = useState<string[]>([]);
+
+  function toggle(value: string) {
+    setSelected((prev) =>
+      prev.includes(value)
+        ? prev.filter((v) => v !== value)
+        : [...prev, value],
+    );
+  }
+
   return (
     <div className="absolute inset-0 bg-ink/60 flex items-end">
       <div className="w-full bg-paper rounded-t-3xl p-6 pb-10 max-h-[85vh] overflow-y-auto">
@@ -431,25 +487,26 @@ function HurtsModal({
         <h2 className="text-2xl font-semibold tracking-tight text-ink">
           Where does it hurt?
         </h2>
-        <p className="mt-2 text-sm text-ink-soft">
-          We&rsquo;ll swap to a gentler version. No skip needed.
+        <p className="mt-2 text-sm text-ink-soft leading-relaxed">
+          Select all that apply. We&rsquo;ll soften this movement around it.
         </p>
 
-        <div className="mt-5 flex flex-wrap gap-2">
-          {regions.map((label) => {
-            const isSel = selected === label;
+        {/* Chip pattern matches quiz Q5 */}
+        <div className="mt-5 flex flex-wrap gap-2.5">
+          {regions.map((opt) => {
+            const isSel = selected.includes(opt.value);
             return (
               <button
-                key={label}
+                key={opt.value}
                 type="button"
-                onClick={() => onSelect(label)}
-                className={`px-4 py-2 rounded-full border text-sm transition-colors ${
+                onClick={() => toggle(opt.value)}
+                className={`px-4 py-2.5 rounded-2xl border text-sm font-medium transition-all ${
                   isSel
                     ? "border-sage bg-sage text-paper"
-                    : "border-line bg-paper text-ink hover:border-sage/50"
+                    : "border-line bg-paper text-ink hover:border-sage/50 hover:bg-paper-warm/30"
                 }`}
               >
-                {label}
+                {opt.label}
               </button>
             );
           })}
@@ -457,12 +514,17 @@ function HurtsModal({
 
         <button
           type="button"
-          onClick={onContinue}
-          disabled={!selected}
+          onClick={() => onContinue(selected)}
+          disabled={selected.length === 0}
           className="mt-7 w-full h-13 py-3.5 rounded-2xl bg-sage text-paper text-base font-medium hover:bg-sage-deep disabled:opacity-50 transition-colors"
         >
-          Swap and continue
+          Soften and continue
         </button>
+
+        <p className="mt-4 text-xs text-ink-soft/70 text-center leading-relaxed">
+          We&rsquo;ll log this for your check-in. No swap to a different video
+          yet — Phase 2 will return a regression. For now: same movement, gentler cue.
+        </p>
       </div>
     </div>
   );

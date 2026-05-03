@@ -19,6 +19,9 @@ const PREVIEW_CTX = {
   loginUrl: "https://welltread.app/today",
   billingUrl: "https://welltread.app/billing",
   supportEmail: "hello@welltread.co",
+  // Niche-lead avatar in the email header (senior + female → Eleanor)
+  castImageUrl: "https://welltread.co/cast/eleanor.png",
+  castName: "Eleanor",
 };
 
 const TEMPLATE_META: Record<

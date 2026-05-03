@@ -54,9 +54,27 @@ type Ctx = {
   billingUrl?: string;
   /** Support contact mailto. */
   supportEmail?: string;
+  /** Cast portrait URL for the niche-lead character (header avatar). */
+  castImageUrl?: string;
+  /** Cast first name, used in the "From: <name>" voicing line. */
+  castName?: string;
 };
 
-function wrap(content: string): string {
+function wrap(content: string, ctx?: Ctx): string {
+  // Header: niche-lead cast portrait (avatar) + Welltread wordmark.
+  // Falls back to wordmark only if no cast image is provided.
+  const headerHtml = ctx?.castImageUrl
+    ? `<div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;">
+         <img src="${ctx.castImageUrl}" alt="${ctx.castName ?? "Welltread"}" width="48" height="60" style="display:block;width:48px;height:60px;border-radius:12px;object-fit:cover;border:1px solid #E6DFCF;" />
+         <div>
+           <div style="font-size:14px;font-weight:600;color:${SAGE};letter-spacing:0.2em;text-transform:uppercase;">Welltread</div>
+           ${ctx.castName ? `<div style="font-size:12px;color:${INK_SOFT};margin-top:2px;">From ${ctx.castName}</div>` : ""}
+         </div>
+       </div>`
+    : `<div style="text-align:left;margin-bottom:32px;">
+         <span style="font-size:14px;font-weight:600;color:${SAGE};letter-spacing:0.2em;text-transform:uppercase;">Welltread</span>
+       </div>`;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,9 +84,7 @@ function wrap(content: string): string {
 </head>
 <body style="margin:0;padding:0;background:${PAPER};font-family:${FONT_STACK};color:${INK};">
 <div style="max-width:560px;margin:0 auto;padding:32px 24px;">
-  <div style="text-align:left;margin-bottom:32px;">
-    <span style="font-size:14px;font-weight:600;color:${SAGE};letter-spacing:0.2em;text-transform:uppercase;">Welltread</span>
-  </div>
+  ${headerHtml}
   ${content}
   <hr style="border:none;border-top:1px solid #E6DFCF;margin:48px 0 24px;">
   <p style="font-size:12px;color:${INK_SOFT};line-height:1.6;">
@@ -123,7 +139,7 @@ If you want us to stop reminding you, ${SUPPORT}.`;
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">You started your Welltread assessment a little while ago. It takes about 5 minutes to finish, and your plan is waiting on the other side.</p>
     ${button(url, "Pick up where I left off")}
     <p style="font-size:14px;line-height:1.6;color:${INK_SOFT};margin:0;">If anything was unclear or felt heavy - that's normal. Most of our members come to us after years of pushing through.</p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -146,7 +162,7 @@ It's about 2 minutes from here.
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">The body you have today is the starting line - not a problem to solve. We just need a few more answers to design around it.</p>
     ${button(url, "Continue my assessment")}
     <p style="font-size:14px;line-height:1.6;color:${INK_SOFT};margin:0;">It's about 2 minutes from here.</p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -169,7 +185,7 @@ If this isn't the right time, no worries. We'll be here when it is.
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">We won't keep nudging. Your assessment answers are saved and your plan is one click away whenever you're ready.</p>
     ${button(url, "Continue my assessment")}
     <p style="font-size:14px;line-height:1.6;color:${INK_SOFT};margin:0;">If this isn't the right time, no worries. We'll be here when it is.</p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -197,7 +213,7 @@ You can start with a $1 trial or skip the trial entirely if you'd rather commit.
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">${activityLine}</p>
     ${button(url, "See my plan")}
     <p style="font-size:14px;line-height:1.6;color:${INK_SOFT};margin:0;">$1 trial or pay-now option, your choice. 30-day money-back either way.</p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -226,7 +242,7 @@ You can take a look without committing. The plan reveal walks you through what w
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:16px 0;">We took your answers and shaped a 12-week plan around them. Same time you've got, same body you've got. Just sequenced properly.</p>
     ${button(url, "See my plan")}
     <p style="font-size:14px;line-height:1.6;color:${INK_SOFT};margin:0;">Take a look without committing. The plan reveal walks you through week 1, 6, and 12.</p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -253,7 +269,7 @@ Whichever you pick: ${url}
       <li><strong style="color:${INK};">$1 trial</strong> first if you want to test. Pay-now also an option if you'd rather skip.</li>
     </ul>
     ${button(url, "See my plan")}
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -278,7 +294,7 @@ hello@welltread.co`;
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">You can reply to this email - a real person reads it. Or take another look here: ${softLink(url, "your plan")}.</p>
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">If the program isn't right for you right now, that's a totally valid answer too. We won't push.</p>
     <p style="font-size:14px;line-height:1.6;color:${INK};margin:24px 0 0;"><em>- Lior, founder</em></p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -301,7 +317,7 @@ Get the free week: ${url}
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">It's been a month since you took the assessment. Life happens.</p>
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">If you're curious but not ready to commit, we'd love to send you the first week of your plan free. Three short sessions, no card, no email follow-up about it. Just see if it fits.</p>
     ${button(url, "Send me the free week")}
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -336,7 +352,7 @@ If anything ever doesn't feel right, the in-app "this hurts" button swaps the mo
     ${button(url, "Sign in to your plan")}
     <p style="font-size:14px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">This link logs you in directly. You'll land on day 1, and we'll send a daily nudge if that's what you picked.</p>
     <p style="font-size:14px;line-height:1.6;color:${INK_SOFT};margin:0;">Cancel anytime in your account. 30-day money-back guarantee on month 1.</p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -361,7 +377,7 @@ Today's session: ${url}
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">Day 3 is when most of our members start to feel a small shift. Less stiffness, sharper focus, slightly better sleep.</p>
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">If you've started: keep going. If you haven't yet: today is a fine day to start. Even 6 minutes counts.</p>
     ${button(url, "Today's session")}
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -387,7 +403,7 @@ If you have questions about anything: hello@welltread.co.
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">Quick heads up - after that, your ${ctx.tierName ?? "plan"} starts at <strong>${ctx.tierPrice ?? "the chosen tier"}</strong> (${ctx.perDay ?? ""}).</p>
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">You don't need to do anything. The plan continues, the program adapts as you do.</p>
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">If you'd rather not continue, ${softLink(billing, "cancel here")} - you'll keep access through tomorrow.</p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -413,7 +429,7 @@ Reminder: cancel anytime, 30-day money-back. Your plan adapts as you do.
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">This week is your first real progression. Slightly longer, slightly steadier, your body's ready for it.</p>
     ${button(url, "Today's session")}
     <p style="font-size:14px;line-height:1.6;color:${INK_SOFT};margin:0;">Cancel anytime, 30-day money-back, plan adapts as you do.</p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -438,7 +454,7 @@ Need help? hello@welltread.co.
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">Your card declined. Could be expiry, insufficient funds, or your bank flagging the charge.</p>
     ${button(billing, "Update payment method")}
     <p style="font-size:14px;line-height:1.6;color:${INK_SOFT};margin:0;">We'll auto-retry over the next few days. If that fails, access pauses (your plan + progress are preserved).</p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -463,7 +479,7 @@ A few things:
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">Your plan and progress are preserved if you ever want to come back. Same email, same place.</p>
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">If you want to share why, hit reply. It actually helps us.</p>
     <p style="font-size:14px;line-height:1.6;color:${INK};margin:24px 0 0;"><em>The door is open. Always.</em></p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -486,7 +502,7 @@ If we got something wrong about your experience and you'd like to share, hello@w
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">Your access has been removed, but your plan stays in our system. If you ever come back, we pick up where you left off.</p>
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">If we got something wrong and you'd like to share, hit reply. I'd genuinely like to hear it.</p>
     <p style="font-size:14px;line-height:1.6;color:${INK};margin:24px 0 0;"><em>- Lior, founder</em></p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 
@@ -512,7 +528,7 @@ If not, this is the last we'll bother you. Promise.
     <p style="font-size:16px;line-height:1.6;color:${INK_SOFT};margin:0 0 16px;">If you're curious about coming back: we'll comp you week 1 free. Three sessions, no card, no commitment.</p>
     ${button(url, "Try the free week")}
     <p style="font-size:14px;line-height:1.6;color:${INK_SOFT};margin:0;">If not, this is the last we'll bother you. Promise.</p>
-  `);
+  `, ctx);
   return { subject, html, text };
 }
 

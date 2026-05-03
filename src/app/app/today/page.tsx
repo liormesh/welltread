@@ -1,16 +1,40 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/app/AppHeader";
 import { CAST_LOOKUP } from "@/lib/app/sample-plan";
 import { resolveTodayForUser } from "@/lib/app/plan";
+import { requireUser } from "@/lib/supabase/auth";
 
 export default async function Today() {
+  // Brand-new visitors to .app with no session land here cold - send them to
+  // the acquisition funnel on .co rather than a confusing login page.
+  await requireUser({ coldRedirect: "https://welltread.co/quiz?source=home" });
+
   const ctx = await resolveTodayForUser();
   if (!ctx) {
-    // No active plan for this user. Could be a brand-new auth user without
-    // a paid plan yet (post-Stripe in real flow). For now: bounce back to login.
-    redirect("/app/login");
+    // Authed but no active plan (e.g. didn't complete checkout). Send back to
+    // the funnel - they need to convert.
+    return (
+      <main className="flex-1 flex items-center justify-center px-6">
+        <div className="max-w-sm text-center">
+          <p className="text-xs uppercase tracking-[0.2em] text-clay mb-4">
+            No active plan
+          </p>
+          <h1 className="text-2xl font-semibold text-ink leading-tight">
+            Your plan isn&rsquo;t set up yet.
+          </h1>
+          <p className="mt-3 text-sm text-ink-soft leading-relaxed">
+            Take the assessment and we&rsquo;ll build it.
+          </p>
+          <a
+            href="https://welltread.co/quiz"
+            className="mt-6 inline-block px-6 h-12 leading-[3rem] rounded-2xl bg-sage text-paper text-sm font-medium hover:bg-sage-deep transition-colors"
+          >
+            Start the assessment &rarr;
+          </a>
+        </div>
+      </main>
+    );
   }
 
   const session = ctx.session;
@@ -84,17 +108,19 @@ export default async function Today() {
             <div className="p-5 bg-paper">
               <p className="text-sm text-ink-soft leading-relaxed">
                 {ctx.completedToday
-                  ? "You're done for today. Same time tomorrow?"
+                  ? "Done for today. Want to do it again?"
                   : session.welcomeCopy}
               </p>
-              {!ctx.completedToday && (
-                <Link
-                  href={`/app/session/${session.id}`}
-                  className="mt-5 w-full h-13 py-3.5 rounded-2xl bg-sage text-paper text-base font-medium flex items-center justify-center gap-2 hover:bg-sage-deep transition-colors"
-                >
-                  Start session &rarr;
-                </Link>
-              )}
+              <Link
+                href={`/app/session/${session.id}${ctx.completedToday ? "?repeat=1" : ""}`}
+                className={`mt-5 w-full h-13 py-3.5 rounded-2xl text-base font-medium flex items-center justify-center gap-2 transition-colors ${
+                  ctx.completedToday
+                    ? "border border-sage text-sage hover:bg-sage hover:text-paper"
+                    : "bg-sage text-paper hover:bg-sage-deep"
+                }`}
+              >
+                {ctx.completedToday ? "Take it again" : "Start session"} &rarr;
+              </Link>
             </div>
           </div>
         </div>

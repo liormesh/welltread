@@ -13,6 +13,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
 import { TEMPLATES, TEMPLATE_GROUPS } from "@/lib/email/templates";
 import { mintResumeToken } from "@/lib/email/tokens";
+import { leadCastFor, type GenderInput } from "@/lib/visual/cast";
 
 type Rule = {
   templateId: (typeof TEMPLATE_GROUPS.acquisition)[number];
@@ -136,11 +137,25 @@ export async function runAcquisitionTick(): Promise<{
           ? (session.metadata.normalized_activity as string)
           : null;
 
+      // Niche-lead character for the email header avatar + "From <name>" voice.
+      // Gender comes from the quiz answers if available (Q4 sex assigned).
+      const answersObj = (session.answers as Record<string, unknown> | null) ?? {};
+      const sexAnswer = answersObj["Q4"];
+      const gender: GenderInput =
+        sexAnswer === "female" || sexAnswer === "male" || sexAnswer === "skip"
+          ? (sexAnswer as GenderInput)
+          : null;
+      const lead = leadCastFor(niche ?? "general", gender);
+      const castImageUrl = `https://welltread.co${lead.canonicalImage}`;
+      const castName = lead.name;
+
       const ctx = {
         firstName: null,
         resumeUrl,
         activity,
         niche,
+        castImageUrl,
+        castName,
       };
 
       const renderer = TEMPLATES[rule.templateId];
