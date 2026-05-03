@@ -1,27 +1,30 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createSupabaseMiddlewareClient } from "@/lib/supabase/auth";
 
 const VAULT_COOKIE = "wt_vault_auth";
 const APP_HOSTS = new Set(["welltread.app", "www.welltread.app"]);
+
+const PUBLIC_APP_PATHS = new Set([
+  "/app/login",
+  "/app/auth/callback",
+]);
 
 /**
  * Edge middleware:
  *
  * 1. **Host routing for welltread.app**: rewrites /<path> → /app/<path>
- *    so the .app domain serves the authenticated product layer cleanly,
- *    while the .co domain serves marketing + quiz + paywall + vault.
- *    Same Worker, different URL space.
- *
- * 2. **Vault gate**: cookie-based password gate for /vault/* on .co.
- *    Untouched by the host rewrite (vault doesn't exist on .app).
+ * 2. **Vault gate**: cookie-based password gate for /vault/* on .co
+ * 3. **App auth gate**: Supabase session check for /app/*
+ *    - /app/login + /app/auth/callback are public
+ *    - everything else requires an authenticated user
  */
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const { pathname } = url;
   const host = req.headers.get("host")?.toLowerCase() ?? "";
 
   // -------- 1. welltread.app → /app/* rewrite --------
   if (APP_HOSTS.has(host)) {
-    // Don't rewrite api routes, _next assets, or anything already under /app
     const passThrough =
       pathname.startsWith("/api/") ||
       pathname.startsWith("/_next/") ||
@@ -31,13 +34,15 @@ export function middleware(req: NextRequest) {
       pathname.startsWith("/scenes/") ||
       pathname.startsWith("/shapes/") ||
       pathname.startsWith("/samples/") ||
+      pathname.startsWith("/videos/") ||
       pathname === "/favicon.ico";
 
     if (!passThrough) {
-      // Root → /app/today
       const target = pathname === "/" ? "/app/today" : `/app${pathname}`;
       url.pathname = target;
-      return NextResponse.rewrite(url);
+      // After rewriting, fall through to the auth gate below using the rewritten path
+      const rewritten = NextResponse.rewrite(url);
+      return await applyAuthGate(req, rewritten, target);
     }
   }
 
@@ -62,10 +67,57 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // -------- 3. App auth gate (when accessed directly via /app/*) --------
+  if (pathname.startsWith("/app")) {
+    const baseRes = NextResponse.next();
+    return await applyAuthGate(req, baseRes, pathname);
+  }
+
   return NextResponse.next();
 }
 
+async function applyAuthGate(
+  req: NextRequest,
+  baseRes: NextResponse,
+  resolvedPath: string,
+) {
+  // Public paths inside /app
+  if (
+    PUBLIC_APP_PATHS.has(resolvedPath) ||
+    resolvedPath.startsWith("/app/auth/")
+  ) {
+    return baseRes;
+  }
+
+  try {
+    const supabase = createSupabaseMiddlewareClient(req, baseRes);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      // Compute the visible-to-user redirect target (the actual URL they typed)
+      const redirectFrom = req.nextUrl.pathname.startsWith("/app/")
+        ? req.nextUrl.pathname.replace(/^\/app/, "")
+        : req.nextUrl.pathname;
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/app/login";
+      loginUrl.search = "";
+      if (redirectFrom && redirectFrom !== "/" && redirectFrom !== "/login") {
+        loginUrl.searchParams.set("redirect", `/app${redirectFrom}`);
+      }
+      return NextResponse.redirect(loginUrl);
+    }
+  } catch (err) {
+    // If Supabase client creation fails (env not set), fail open in dev,
+    // closed in prod. For now: allow through with a server-side warning
+    // so we don't break local development.
+    console.warn("[middleware] auth gate skipped:", err);
+  }
+
+  return baseRes;
+}
+
 export const config = {
-  // Match everything except static assets + Next internals.
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

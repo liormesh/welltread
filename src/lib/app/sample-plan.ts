@@ -35,10 +35,10 @@ export type WeekDay = {
   status: "done" | "today" | "future" | "skipped";
 };
 
-// Stand-in videos. Pexels free stock, will be swapped for Veo 3.1 generations
-// once the cast turnarounds + movement library are produced.
-const PLACEHOLDER_VIDEO =
-  "https://videos.pexels.com/video-files/4534104/4534104-uhd_2560_1440_25fps.mp4";
+// Stand-in video. Lior's Veo 3.1 test render of Maria doing a cat-cow.
+// Used across all 6 sample movements until the full library lands.
+// Self-hosted in /public/videos so it works on .app without CORS surprises.
+const PLACEHOLDER_VIDEO = "/videos/test/maria_cat_cow_v2.mp4";
 
 export const SAMPLE_SESSIONS: Record<string, Session> = {
   "day-1": {

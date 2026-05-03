@@ -7,7 +7,20 @@ import type { Session } from "@/lib/app/sample-plan";
 type Phase = "preroll" | "movement" | "transition" | "done" | "hurts";
 
 const PREROLL_MS = 3000;
-const TRANSITION_MS = 2000;
+
+/**
+ * Transition between movements. 5 seconds is the sweet spot per category research:
+ *   - Peloton: 5s with countdown
+ *   - BetterMe: 3s with progress bar
+ *   - Sweat: 5-8s with description
+ *   - Apple Fitness+: 3-5s no countdown (auto-flows)
+ *   - Down Dog / Glo: 5-10s for next-pose explanation
+ *
+ * Our audience (40+, learning new movements) benefits from longer reads.
+ * 5s gives time to read the movement name, see the next cast member, and prepare
+ * mentally. Countdown ring offers visual reassurance the app didn't freeze.
+ */
+const TRANSITION_MS = 5000;
 
 export function SessionPlayer({ session }: { session: Session }) {
   const router = useRouter();
@@ -205,24 +218,21 @@ export function SessionPlayer({ session }: { session: Session }) {
 
       {/* TRANSITION */}
       {phase === "transition" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8 bg-paper-warm">
-          <div
-            className="absolute inset-0 opacity-50"
-            style={{
-              backgroundImage: "url(/shapes/balance.png)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-          <div className="relative">
-            <p className="text-xs uppercase tracking-[0.2em] text-clay mb-3">
-              Next
-            </p>
-            <h2 className="text-3xl font-semibold tracking-tight text-ink leading-tight">
-              {session.movements[movementIndex + 1]?.name ?? "Cooldown"}
-            </h2>
-          </div>
-        </div>
+        <TransitionCard
+          nextName={session.movements[movementIndex + 1]?.name ?? "Cooldown"}
+          nextCue={session.movements[movementIndex + 1]?.cue}
+          durationMs={TRANSITION_MS}
+          onSkip={() => {
+            const next = movementIndex + 1;
+            if (next >= session.movements.length) {
+              setPhase("done");
+            } else {
+              setMovementIndex(next);
+              setSecondsRemaining(session.movements[next].durationSeconds);
+              setPhase("movement");
+            }
+          }}
+        />
       )}
 
       {/* DONE */}
@@ -259,6 +269,103 @@ export function SessionPlayer({ session }: { session: Session }) {
           onCancel={handleHurtsCancel}
         />
       )}
+    </div>
+  );
+}
+
+function TransitionCard({
+  nextName,
+  nextCue,
+  durationMs,
+  onSkip,
+}: {
+  nextName: string;
+  nextCue?: string;
+  durationMs: number;
+  onSkip: () => void;
+}) {
+  const [secondsLeft, setSecondsLeft] = useState(Math.ceil(durationMs / 1000));
+
+  useEffect(() => {
+    if (secondsLeft <= 0) return;
+    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [secondsLeft]);
+
+  // Visual countdown via SVG circle stroke
+  const circumference = 2 * Math.PI * 36;
+  const total = Math.ceil(durationMs / 1000);
+  const progress = (total - secondsLeft) / total;
+  const strokeOffset = circumference * (1 - progress);
+
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8 bg-paper-warm">
+      <div
+        className="absolute inset-0 opacity-50"
+        style={{
+          backgroundImage: "url(/shapes/balance.png)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+      <div className="relative w-full max-w-sm">
+        <p className="text-xs uppercase tracking-[0.2em] text-clay mb-3">
+          Next
+        </p>
+        <h2 className="text-3xl font-semibold tracking-tight text-ink leading-tight">
+          {nextName}
+        </h2>
+        {nextCue && (
+          <p className="mt-3 text-sm text-ink-soft leading-relaxed max-w-xs mx-auto">
+            {nextCue}
+          </p>
+        )}
+
+        {/* Countdown ring */}
+        <div className="mt-8 flex items-center justify-center">
+          <div className="relative w-20 h-20">
+            <svg
+              viewBox="0 0 80 80"
+              className="w-20 h-20 -rotate-90"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="40"
+                cy="40"
+                r="36"
+                stroke="#E6DFCF"
+                strokeWidth="3"
+                fill="none"
+              />
+              <circle
+                cx="40"
+                cy="40"
+                r="36"
+                stroke="#2D4F4A"
+                strokeWidth="3"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeOffset}
+                style={{ transition: "stroke-dashoffset 1s linear" }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-2xl font-semibold text-sage tabular-nums">
+                {secondsLeft}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onSkip}
+          className="mt-6 text-sm text-ink-soft underline-offset-4 underline hover:text-sage transition-colors"
+        >
+          Start now
+        </button>
+      </div>
     </div>
   );
 }

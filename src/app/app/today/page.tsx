@@ -7,10 +7,16 @@ import {
   SAMPLE_USER,
   CAST_LOOKUP,
 } from "@/lib/app/sample-plan";
+import { getCurrentProfile } from "@/lib/supabase/auth";
 
-export default function Today() {
+export default async function Today() {
+  // Confirm session is live (middleware already gates, this is a belt-and-suspenders check
+  // and gives us the profile if we want to personalize). Phase 1 still uses sample plan data;
+  // assignment engine will swap this for a real plan lookup.
+  await getCurrentProfile();
   const session = SAMPLE_SESSIONS["day-1"];
   const cast = CAST_LOOKUP[session.cast];
+  const activity = SAMPLE_USER.activity;
   const todayIndex = SAMPLE_WEEK.findIndex((d) => d.status === "today");
   const yesterday =
     todayIndex > 0 ? SAMPLE_WEEK[todayIndex - 1] : null;
@@ -94,7 +100,7 @@ export default function Today() {
             </p>
             <p className="text-sm text-ink leading-snug">
               <span className="italic text-sage">
-                {SAMPLE_USER.activity}
+                {activity}
               </span>
             </p>
           </div>

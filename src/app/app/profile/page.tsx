@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { AppHeader } from "@/components/app/AppHeader";
+import { SignOutButton } from "@/components/app/SignOutButton";
 import { SAMPLE_USER } from "@/lib/app/sample-plan";
+import { getCurrentProfile } from "@/lib/supabase/auth";
 
-export default function Profile() {
+export default async function Profile() {
+  const profile = await getCurrentProfile();
+  const firstName = profile?.full_name?.split(" ")[0] ?? profile?.display_name ?? SAMPLE_USER.firstName;
+
   return (
     <>
       <AppHeader title="Profile" />
@@ -11,7 +16,7 @@ export default function Profile() {
         <div className="px-6 pt-6">
           <p className="text-xs uppercase tracking-[0.2em] text-clay">Hi</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight text-ink">
-            {SAMPLE_USER.firstName}
+            {firstName}
           </h1>
           <p className="mt-2 text-sm text-ink-soft">
             Your plan is built around{" "}
@@ -64,9 +69,13 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="px-6 mt-10 text-center">
+        <div className="px-6 mt-10 pt-6 border-t border-line/60">
+          <SignOutButton />
+        </div>
+
+        <div className="px-6 mt-4 text-center">
           <p className="text-xs text-ink-soft/60">
-            Demo mode - real account features land with Stripe in Phase 1.
+            Demo mode - billing + plan features land with Stripe.
           </p>
         </div>
       </div>

@@ -18,9 +18,25 @@ export function DoneCheckin() {
 
   async function handleSubmit() {
     setSubmitting(true);
-    // TODO Phase 1: POST to /api/app/checkin with { sid, body, energy, feel, flag }
-    // For demo: just simulate and redirect.
-    await new Promise((r) => setTimeout(r, 600));
+    try {
+      const res = await fetch("/api/app/checkin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: sid,
+          body,
+          energy,
+          feel,
+          flag: flag.trim() || undefined,
+        }),
+      });
+      if (!res.ok) {
+        // Even if the API call fails, don't strand the user. Log + continue.
+        console.error("[done] checkin failed", await res.text().catch(() => ""));
+      }
+    } catch (err) {
+      console.error("[done] checkin failed", err);
+    }
     router.push("/app/today");
   }
 
