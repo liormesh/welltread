@@ -77,6 +77,12 @@ export default function VaultIndex() {
             title="Product framework"
             body="The 12-week course. Content composition, daily delivery, adaptation, build phases."
           />
+          <Card
+            href="/vault/email-sequences"
+            eyebrow="13"
+            title="Email sequences"
+            body="16 emails across acquisition + payment lifecycle. Acquisition wired and live, payment templates ready."
+          />
         </div>
       </section>
 

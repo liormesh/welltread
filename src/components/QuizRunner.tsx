@@ -103,6 +103,13 @@ export function QuizRunner() {
 
   // Boot
   useEffect(() => {
+    // Resume from a re-engagement email link (highest priority)
+    const resumeToken = searchParams.get("resume");
+    if (resumeToken) {
+      void resumeFromToken(resumeToken);
+      return;
+    }
+
     const persisted = loadPersisted();
     if (persisted && persisted.source === source) {
       setSessionId(persisted.id);
@@ -144,6 +151,40 @@ export function QuizRunner() {
       .catch(() => setError("Could not start your assessment. Please refresh."));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]);
+
+  async function resumeFromToken(token: string) {
+    try {
+      const res = await fetch(`/api/quiz/resume?token=${encodeURIComponent(token)}`);
+      if (!res.ok) {
+        setError("This link has expired. Please retake the quiz.");
+        return;
+      }
+      const data = (await res.json()) as {
+        id: string;
+        source: Source;
+        answers: Answers;
+        normalizedActivity: string | null;
+      };
+      setSessionId(data.id);
+      const persisted: Persisted = {
+        id: data.id,
+        source: data.source ?? source,
+        utm: {},
+        history: [],
+        current: startSlotId(data.source ?? source),
+        answers: data.answers,
+        normalizedActivity: data.normalizedActivity ?? null,
+      };
+      savePersisted(persisted);
+      setHistory(persisted.history);
+      setCurrent(persisted.current);
+      setAnswers(persisted.answers);
+      // Clean the URL so refresh doesn't re-trigger resume
+      router.replace("/quiz");
+    } catch {
+      setError("This link has expired. Please retake the quiz.");
+    }
+  }
 
   const persistAndSave = useCallback(
     (next: Persisted) => {

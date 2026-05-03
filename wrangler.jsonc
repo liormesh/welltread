@@ -16,7 +16,9 @@
   ],
   "vars": {
     "NEXT_PUBLIC_SUPABASE_URL": "https://xzjwbrtvxlluwjkjsmgr.supabase.co",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6andicnR2eGxsdXdqa2pzbWdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NTEyNTQsImV4cCI6MjA5MzIyNzI1NH0.hJuQtIWVpVDZqsO89UqeeVX7mEWvM3t1KlRDMb_LhZE"
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6andicnR2eGxsdXdqa2pzbWdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NTEyNTQsImV4cCI6MjA5MzIyNzI1NH0.hJuQtIWVpVDZqsO89UqeeVX7mEWvM3t1KlRDMb_LhZE",
+    "EMAIL_FROM": "Welltread <hello@welltread.co>",
+    "EMAIL_REPLY_TO": "hello@welltread.co"
   },
   "observability": {
     "enabled": true

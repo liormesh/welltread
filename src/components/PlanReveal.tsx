@@ -28,7 +28,54 @@ export function PlanReveal() {
   const [castName, setCastName] = useState<string>("Maria");
   const [hydrated, setHydrated] = useState(false);
 
+  async function hydrateFromToken(token: string) {
+    try {
+      const res = await fetch(`/api/quiz/resume?token=${encodeURIComponent(token)}`);
+      if (!res.ok) {
+        setHydrated(true);
+        return;
+      }
+      const data = (await res.json()) as {
+        id: string;
+        source: Source;
+        answers: Answers;
+        normalizedActivity: string | null;
+      };
+      const persisted: Persisted = {
+        id: data.id,
+        source: data.source ?? "home",
+        answers: data.answers,
+        normalizedActivity: data.normalizedActivity ?? null,
+      };
+      window.localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(persisted));
+      const resolvedNiche = resolveNiche(persisted.source, persisted.answers);
+      setNiche(resolvedNiche);
+      const previewed = previewPlan(resolvedNiche, persisted.answers);
+      if (persisted.normalizedActivity) {
+        previewed.activity = persisted.normalizedActivity;
+        previewed.activityIsChip = true;
+      }
+      setPlan(previewed);
+      const ageBand = resolveAgeBand(persisted.answers);
+      const cast = castFor(resolvedNiche, ageBand);
+      setCastImage(cast.canonicalImage);
+      setCastName(cast.name);
+      // Clean URL
+      window.history.replaceState({}, "", "/plan");
+    } finally {
+      setHydrated(true);
+    }
+  }
+
   useEffect(() => {
+    // Resume from email-link token if present
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("resume");
+    if (token) {
+      void hydrateFromToken(token);
+      return;
+    }
+
     setHydrated(true);
     try {
       const raw = window.localStorage.getItem(QUIZ_STORAGE_KEY);
@@ -219,7 +266,15 @@ export function PlanReveal() {
           >
             Start your $1 trial
           </button>
-          <p className="mt-3 text-xs text-ink-soft/70 text-center">
+          <button
+            type="button"
+            disabled
+            title="Stripe wiring next phase"
+            className="mt-3 w-full text-sm text-ink-soft hover:text-sage transition-colors disabled:cursor-not-allowed underline-offset-4 hover:underline"
+          >
+            Skip trial - pay now (30-day money-back)
+          </button>
+          <p className="mt-4 text-xs text-ink-soft/70 text-center">
             Niche: {niche}. Stripe checkout opens next phase. Your plan is saved.
           </p>
         </div>

@@ -1,0 +1,23 @@
+name: Email cron tick
+
+on:
+  schedule:
+    # Every 15 minutes
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger email scheduler
+        env:
+          AUTH: ${{ secrets.EMAIL_TOKEN_SECRET }}
+        run: |
+          response=$(curl -s -o /tmp/body.json -w "%{http_code}" \
+            -X POST "https://welltread.co/api/cron/email-tick" \
+            -H "X-Cron-Auth: ${AUTH}" \
+            -H "Content-Type: application/json")
+          echo "HTTP $response"
+          cat /tmp/body.json
+          [ "$response" = "200" ]
