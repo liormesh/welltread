@@ -95,6 +95,13 @@ export default function VaultIndex() {
             title="User journey"
             body="The paid user's happy path. Welcome email to week 12 graduation. Every screen, every nudge, every adaptation."
           />
+          <Card
+            href="/vault/app-mockup"
+            eyebrow="16"
+            title="App mockup"
+            body="9 mobile screens at fidelity - Day 1, session player, check-in, week overview, hurts modal, week 4 re-eval, week 12 graduation."
+            highlight
+          />
         </div>
       </section>
 

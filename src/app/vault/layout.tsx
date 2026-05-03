@@ -47,6 +47,9 @@ export default function VaultLayout({ children }: { children: React.ReactNode })
             <Link href="/vault/user-journey" className="hover:text-sage transition-colors">
               Journey
             </Link>
+            <Link href="/vault/app-mockup" className="hover:text-sage transition-colors">
+              Mockup
+            </Link>
             <Link href="/vault/email-sequences" className="hover:text-sage transition-colors">
               Emails
             </Link>
