@@ -89,6 +89,12 @@ export default function VaultIndex() {
             title="Product build scope"
             body="14 subsystems, 4 phases, effort estimates, open decisions, blocking dependencies. The build plan."
           />
+          <Card
+            href="/vault/user-journey"
+            eyebrow="15"
+            title="User journey"
+            body="The paid user's happy path. Welcome email to week 12 graduation. Every screen, every nudge, every adaptation."
+          />
         </div>
       </section>
 
