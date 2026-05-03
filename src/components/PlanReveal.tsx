@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   previewPlan,
   resolveNiche,
+  resolveAgeBand,
   type Source,
   type Answers,
   type PlanPreview,
 } from "@/lib/quiz/definition";
+import { castFor } from "@/lib/visual/cast";
 import { QUIZ_STORAGE_KEY } from "@/components/QuizRunner";
 
 type Persisted = {
@@ -20,6 +23,8 @@ type Persisted = {
 export function PlanReveal() {
   const [plan, setPlan] = useState<PlanPreview | null>(null);
   const [niche, setNiche] = useState<string>("general");
+  const [castImage, setCastImage] = useState<string>("/cast/maria.png");
+  const [castName, setCastName] = useState<string>("Maria");
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -31,6 +36,10 @@ export function PlanReveal() {
       const resolvedNiche = resolveNiche(parsed.source, parsed.answers);
       setNiche(resolvedNiche);
       setPlan(previewPlan(resolvedNiche, parsed.answers));
+      const ageBand = resolveAgeBand(parsed.answers);
+      const cast = castFor(resolvedNiche, ageBand);
+      setCastImage(cast.canonicalImage);
+      setCastName(cast.name);
     } catch {
       /* fall through to no-plan state */
     }
@@ -39,9 +48,7 @@ export function PlanReveal() {
   if (hydrated && !plan) {
     return (
       <section className="mx-auto max-w-2xl px-6 pt-16 pb-24 text-center">
-        <p className="text-xs uppercase tracking-[0.2em] text-clay mb-4">
-          Hmm
-        </p>
+        <p className="text-xs uppercase tracking-[0.2em] text-clay mb-4">Hmm</p>
         <h1 className="text-4xl font-semibold tracking-tight text-ink">
           We don&rsquo;t have your answers yet.
         </h1>
@@ -68,21 +75,39 @@ export function PlanReveal() {
 
   return (
     <>
-      {/* Hero */}
-      <section className="mx-auto max-w-3xl px-6 pt-12 pb-12">
-        <p className="text-xs uppercase tracking-[0.2em] text-clay mb-4">
-          Built for you
-        </p>
-        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-ink leading-[1.1]">
-          {plan.title}
-        </h1>
-        <p className="mt-6 text-lg text-ink-soft leading-relaxed max-w-2xl">
-          {plan.weeks} weeks. {plan.sessionsPerWeek} sessions per week.
-          Adjusts as your body responds.
-        </p>
+      {/* Hero with cast portrait */}
+      <section className="mx-auto max-w-6xl px-6 pt-12 pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-10 items-center">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-clay mb-4">
+              Built for you
+            </p>
+            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-ink leading-[1.1]">
+              {plan.title}
+            </h1>
+            <p className="mt-6 text-xl text-ink-soft leading-relaxed">
+              By week 12, you&rsquo;ll be ready to{" "}
+              <span className="text-sage italic font-normal">{plan.activity}</span>.
+            </p>
+            <p className="mt-6 text-base text-ink-soft leading-relaxed">
+              {plan.weeks} weeks. {plan.sessionsPerWeek} sessions per week.
+              Adjusts as your body responds.
+            </p>
+          </div>
+          <div className="rounded-3xl overflow-hidden border border-line bg-paper-warm/30 max-w-sm w-full mx-auto">
+            <Image
+              src={castImage}
+              alt={`${castName}, your program guide`}
+              width={400}
+              height={500}
+              className="w-full h-auto object-cover"
+              unoptimized
+            />
+          </div>
+        </div>
       </section>
 
-      {/* What's inside */}
+      {/* Focus */}
       <section className="mx-auto max-w-3xl px-6 pb-12">
         <h2 className="text-xl font-semibold text-ink mb-6">
           What we&rsquo;ll work on
@@ -113,46 +138,28 @@ export function PlanReveal() {
         )}
       </section>
 
-      {/* Week preview */}
+      {/* Week timeline */}
       <section className="mx-auto max-w-3xl px-6 pb-16">
-        <h2 className="text-xl font-semibold text-ink mb-6">
-          A peek at week 1
-        </h2>
+        <h2 className="text-xl font-semibold text-ink mb-6">Your 12-week path</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="rounded-2xl border border-line bg-paper p-5"
-            >
-              <p className="text-xs uppercase tracking-[0.2em] text-clay mb-2">
-                Day {i}
-              </p>
-              <p className="text-ink font-medium">
-                {i === 1 && "Foundation - 12 min"}
-                {i === 2 && "Mobility flow - 15 min"}
-                {i === 3 && "Strength baseline - 18 min"}
-              </p>
-              <p className="mt-2 text-sm text-ink-soft">
-                Short, deliberate, doable on a tired day.
-              </p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 opacity-40 select-none">
-          {[4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="rounded-2xl border border-line bg-paper p-5 blur-[1px]"
-            >
-              <p className="text-xs uppercase tracking-[0.2em] text-clay mb-2">
-                Day {i}
-              </p>
-              <p className="text-ink font-medium">Locked</p>
-              <p className="mt-2 text-sm text-ink-soft">
-                Available after you start your trial.
-              </p>
-            </div>
-          ))}
+          <Milestone
+            week="Week 3"
+            title="Less stiff"
+            body="Mobility blocks compound. Daily ranges return."
+            shape="mobility"
+          />
+          <Milestone
+            week="Week 6"
+            title="Stronger"
+            body="Functional strength shows up in real life."
+            shape="strength"
+          />
+          <Milestone
+            week="Week 12"
+            title={plan.activity}
+            body="The thing you came here for. We meet you there."
+            shape="alignment"
+          />
         </div>
       </section>
 
@@ -171,30 +178,31 @@ export function PlanReveal() {
           </p>
 
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <Tier term="1 month" price="$24" perDay="$0.80 / day" />
             <Tier
-              term="1 month"
-              price="$29"
-              perWeek="$7.25 / week"
+              term="3 months"
+              price="$59"
+              perDay="$0.66 / day"
+              highlight="Most popular"
             />
             <Tier
-              term="6 months"
-              price="$79"
-              perWeek="$3.04 / week"
-              highlight="Best value"
+              term="12 months"
+              price="$99"
+              perDay="$0.27 / day"
+              note="Best value"
             />
-            <Tier term="12 months" price="$129" perWeek="$2.48 / week" />
           </div>
 
           <button
             type="button"
             disabled
-            title="Stripe wiring next session"
+            title="Stripe wiring next phase"
             className="mt-8 w-full h-14 rounded-2xl bg-sage text-paper font-medium hover:bg-sage-deep transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
             Start your $1 trial
           </button>
           <p className="mt-3 text-xs text-ink-soft/70 text-center">
-            Niche: {niche}. Checkout opens next week. Your plan is saved.
+            Niche: {niche}. Stripe checkout opens next phase. Your plan is saved.
           </p>
         </div>
       </section>
@@ -202,16 +210,50 @@ export function PlanReveal() {
   );
 }
 
+function Milestone({
+  week,
+  title,
+  body,
+  shape,
+}: {
+  week: string;
+  title: string;
+  body: string;
+  shape: "mobility" | "strength" | "alignment";
+}) {
+  return (
+    <div className="rounded-2xl border border-line bg-paper p-5 relative overflow-hidden">
+      <div
+        className="absolute inset-0 opacity-25"
+        style={{
+          backgroundImage: `url(/shapes/${shape}.png)`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+      <div className="relative">
+        <p className="text-xs uppercase tracking-[0.2em] text-clay mb-2">
+          {week}
+        </p>
+        <p className="text-ink font-semibold text-lg">{title}</p>
+        <p className="mt-2 text-sm text-ink-soft leading-relaxed">{body}</p>
+      </div>
+    </div>
+  );
+}
+
 function Tier({
   term,
   price,
-  perWeek,
+  perDay,
   highlight,
+  note,
 }: {
   term: string;
   price: string;
-  perWeek: string;
+  perDay: string;
   highlight?: string;
+  note?: string;
 }) {
   return (
     <div
@@ -226,9 +268,14 @@ function Tier({
           {highlight}
         </p>
       )}
+      {note && !highlight && (
+        <p className="text-xs uppercase tracking-[0.2em] text-clay mb-3">
+          {note}
+        </p>
+      )}
       <p className="text-sm text-ink-soft">{term}</p>
       <p className="mt-2 text-3xl font-semibold text-ink">{price}</p>
-      <p className="mt-1 text-sm text-ink-soft">{perWeek}</p>
+      <p className="mt-1 text-sm text-ink-soft">{perDay}</p>
     </div>
   );
 }

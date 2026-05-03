@@ -1,15 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback, FormEvent } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  getQuestion,
-  startQuestionId,
+  getSlot,
+  startSlotId,
   resolveNiche,
+  isQuestion,
+  isInterstitial,
+  QUIZ_VERSION,
   type Answers,
   type Source,
-  type Question,
+  type AnswerValue,
 } from "@/lib/quiz/definition";
+import { QuestionRenderer } from "@/components/quiz/QuestionRenderer";
+import { InterstitialRenderer } from "@/components/quiz/InterstitialRenderer";
 
 const SOURCES: Source[] = [
   "home",
@@ -20,7 +25,7 @@ const SOURCES: Source[] = [
   "glp1",
 ];
 
-const STORAGE_KEY = "wt:quiz:v1";
+const STORAGE_KEY = "wt:quiz:v2";
 
 type Persisted = {
   id: string;
@@ -46,7 +51,7 @@ function savePersisted(p: Persisted) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
   } catch {
-    /* quota errors are non-fatal */
+    /* quota errors non-fatal */
   }
 }
 
@@ -59,10 +64,7 @@ function clearPersisted() {
   }
 }
 
-function collectUtm(params: URLSearchParams): {
-  utm: Record<string, string>;
-  click_ids: Record<string, string>;
-} {
+function collectUtm(params: URLSearchParams) {
   const utm: Record<string, string> = {};
   const click_ids: Record<string, string> = {};
   for (const [k, v] of params.entries()) {
@@ -85,14 +87,12 @@ export function QuizRunner() {
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [history, setHistory] = useState<string[]>([]);
-  const [current, setCurrent] = useState<string>(startQuestionId(source));
+  const [current, setCurrent] = useState<string>(startSlotId(source));
   const [answers, setAnswers] = useState<Answers>({});
-  const [emailMode, setEmailMode] = useState(false);
-  const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Boot: load existing session or start a new one
+  // Boot
   useEffect(() => {
     const persisted = loadPersisted();
     if (persisted && persisted.source === source) {
@@ -100,23 +100,19 @@ export function QuizRunner() {
       setHistory(persisted.history);
       setCurrent(persisted.current);
       setAnswers(persisted.answers);
-      if (persisted.current === "EMAIL") setEmailMode(true);
       return;
     }
 
-    // Brand new session
     const { utm, click_ids } = collectUtm(searchParams);
-    const body = {
-      source,
-      utm,
-      click_ids,
-      referrer: typeof document !== "undefined" ? document.referrer : "",
-    };
-
     fetch("/api/quiz/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        source,
+        utm,
+        click_ids,
+        referrer: typeof document !== "undefined" ? document.referrer : "",
+      }),
     })
       .then((r) => r.json())
       .then((data) => {
@@ -126,7 +122,7 @@ export function QuizRunner() {
             id: data.id,
             source,
             history: [],
-            current: startQuestionId(source),
+            current: startSlotId(source),
             answers: {},
           });
         } else {
@@ -150,116 +146,67 @@ export function QuizRunner() {
           answers: next.answers,
           niche,
         }),
-      }).catch(() => {
-        /* fire-and-forget; final completion is the source of truth */
-      });
+      }).catch(() => {});
     },
     [sessionId, source],
   );
 
-  const question: Question | null = useMemo(
-    () => (current === "EMAIL" ? null : getQuestion(current)),
-    [current],
-  );
-
-  const totalSteps = 4; // approximate, used for progress bar
+  const slot = getSlot(current);
+  const totalSteps = 38; // approximate; for progress bar
   const progress = Math.min(
     100,
-    Math.round(((history.length + (emailMode ? 1 : 0)) / totalSteps) * 100),
+    Math.round((history.length / totalSteps) * 100),
   );
 
-  function answerSingle(value: string) {
-    if (!question || !sessionId) return;
-    const nextAnswers = { ...answers, [question.id]: value };
-    const nextStep = question.next(value, nextAnswers);
-    const nextHistory = [...history, question.id];
-    setAnswers(nextAnswers);
-    setHistory(nextHistory);
-    setCurrent(nextStep);
-    if (nextStep === "EMAIL") setEmailMode(true);
-
-    persistAndSave({
-      id: sessionId,
-      source,
-      history: nextHistory,
-      current: nextStep,
-      answers: nextAnswers,
-    });
-  }
-
-  function toggleMulti(value: string) {
-    if (!question) return;
-    const existing = (answers[question.id] as string[] | undefined) ?? [];
-
-    let nextValues: string[];
-    if (value === "none") {
-      nextValues = existing.includes("none") ? [] : ["none"];
-    } else {
-      const without = existing.filter((v) => v !== "none");
-      nextValues = without.includes(value)
-        ? without.filter((v) => v !== value)
-        : [...without, value];
-    }
-
-    setAnswers({ ...answers, [question.id]: nextValues });
-  }
-
-  function continueMulti() {
-    if (!question || !sessionId) return;
-    const value = (answers[question.id] as string[] | undefined) ?? [];
-    const nextStep = question.next(value, answers);
-    const nextHistory = [...history, question.id];
-    setHistory(nextHistory);
-    setCurrent(nextStep);
-    if (nextStep === "EMAIL") setEmailMode(true);
-
-    persistAndSave({
-      id: sessionId,
-      source,
-      history: nextHistory,
-      current: nextStep,
-      answers,
-    });
-  }
-
-  function back() {
-    if (history.length === 0) return;
-    const last = history[history.length - 1];
-    const nextHistory = history.slice(0, -1);
-    setHistory(nextHistory);
-    setCurrent(last);
-    setEmailMode(false);
-    if (sessionId) {
-      savePersisted({
-        id: sessionId,
-        source,
-        history: nextHistory,
-        current: last,
-        answers,
-      });
-    }
-  }
-
-  async function submitEmail(e: FormEvent) {
-    e.preventDefault();
+  function advance(nextId: string, newAnswers: Answers) {
     if (!sessionId) return;
-    if (!email.includes("@")) {
-      setError("Please enter a valid email.");
+    const nextHistory = [...history, current];
+    if (nextId === "DONE") {
+      submitFinal(newAnswers, nextHistory);
       return;
     }
+    setHistory(nextHistory);
+    setCurrent(nextId);
+    setAnswers(newAnswers);
+    persistAndSave({
+      id: sessionId,
+      source,
+      history: nextHistory,
+      current: nextId,
+      answers: newAnswers,
+    });
+  }
+
+  async function submitFinal(finalAnswers: Answers, finalHistory: string[]) {
+    if (!sessionId) return;
     setSubmitting(true);
     setError(null);
 
-    const niche = resolveNiche(source, answers);
+    const niche = resolveNiche(source, finalAnswers);
+    const email = finalAnswers["Q28"] as string | undefined;
 
     try {
       const res = await fetch("/api/quiz/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: sessionId, email, answers, niche }),
+        body: JSON.stringify({
+          id: sessionId,
+          email,
+          answers: finalAnswers,
+          niche,
+        }),
       });
       if (!res.ok) throw new Error();
-      // Hand off to the plan page; let it pull from localStorage so a refresh works.
+
+      const persisted: Persisted = {
+        id: sessionId,
+        source,
+        history: finalHistory,
+        current: "DONE",
+        answers: finalAnswers,
+      };
+      savePersisted(persisted);
+
       router.push("/plan");
     } catch {
       setError("Something went wrong. Please try again.");
@@ -267,13 +214,136 @@ export function QuizRunner() {
     }
   }
 
+  function back() {
+    if (history.length === 0) return;
+    if (!sessionId) return;
+    const last = history[history.length - 1];
+    const nextHistory = history.slice(0, -1);
+    setHistory(nextHistory);
+    setCurrent(last);
+    persistAndSave({
+      id: sessionId,
+      source,
+      history: nextHistory,
+      current: last,
+      answers,
+    });
+  }
+
+  function onSingle(value: string) {
+    if (!slot || !isQuestion(slot)) return;
+    const newAnswers = { ...answers, [slot.id]: value };
+    setAnswers(newAnswers);
+    // Single-select questions auto-advance
+    if (slot.type === "single" || slot.type === "yesno") {
+      const nextId = slot.next(value, newAnswers);
+      advance(nextId, newAnswers);
+    } else {
+      // checkbox / multi - stay on screen, wait for continue
+      setAnswers(newAnswers);
+      const updated: Persisted = {
+        id: sessionId!,
+        source,
+        history,
+        current,
+        answers: newAnswers,
+      };
+      persistAndSave(updated);
+    }
+  }
+
+  function onMulti(value: string[]) {
+    if (!slot || !isQuestion(slot)) return;
+    const newAnswers = { ...answers, [slot.id]: value };
+    setAnswers(newAnswers);
+    if (sessionId) {
+      persistAndSave({
+        id: sessionId,
+        source,
+        history,
+        current,
+        answers: newAnswers,
+      });
+    }
+  }
+
+  function onSlider(value: number) {
+    if (!slot || !isQuestion(slot)) return;
+    const newAnswers = { ...answers, [slot.id]: value };
+    setAnswers(newAnswers);
+    if (sessionId) {
+      persistAndSave({
+        id: sessionId,
+        source,
+        history,
+        current,
+        answers: newAnswers,
+      });
+    }
+  }
+
+  function onText(value: string) {
+    if (!slot || !isQuestion(slot)) return;
+    const newAnswers = { ...answers, [slot.id]: value };
+    setAnswers(newAnswers);
+    if (sessionId) {
+      persistAndSave({
+        id: sessionId,
+        source,
+        history,
+        current,
+        answers: newAnswers,
+      });
+    }
+  }
+
+  function onContinue() {
+    if (!slot || !isQuestion(slot)) return;
+    const value = answers[slot.id];
+    if (value === undefined) return;
+    const nextId = slot.next(value as AnswerValue, answers);
+    advance(nextId, answers);
+  }
+
+  function onInterstitialContinue() {
+    if (!slot || !isInterstitial(slot)) return;
+    const nextId = slot.next(answers);
+    advance(nextId, answers);
+  }
+
   if (error && !sessionId) {
     return <p className="text-clay text-sm">{error}</p>;
   }
 
+  if (submitting) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-ink-soft">Saving your plan...</p>
+      </div>
+    );
+  }
+
+  if (!slot) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-clay text-sm mb-4">Quiz state lost.</p>
+        <button
+          type="button"
+          onClick={() => {
+            clearPersisted();
+            window.location.reload();
+          }}
+          className="px-5 py-2 rounded-2xl bg-sage text-paper text-sm hover:bg-sage-deep transition-colors"
+        >
+          Restart
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {/* Progress */}
+      {/* Progress bar */}
       <div className="mb-10">
         <div className="h-1 w-full bg-line/60 rounded-full overflow-hidden">
           <div
@@ -282,116 +352,39 @@ export function QuizRunner() {
           />
         </div>
         <div className="mt-3 flex items-center justify-between text-xs text-ink-soft/70">
-          <span>
-            {emailMode ? "Last step" : `Step ${history.length + 1}`}
-          </span>
+          <span>{slot.id}</span>
           {history.length > 0 && (
             <button
               type="button"
               onClick={back}
               className="hover:text-sage transition-colors"
             >
-              &larr; Back
+              ← Back
             </button>
           )}
         </div>
       </div>
 
-      {emailMode && (
-        <form onSubmit={submitEmail} className="space-y-6">
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-ink leading-tight">
-              Where should we send your{" "}
-              <span className="text-sage italic font-normal">plan</span>?
-            </h2>
-            <p className="mt-4 text-ink-soft leading-relaxed">
-              We&rsquo;ll show you a preview now and email a copy you can come
-              back to. No spam, ever.
-            </p>
-          </div>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="w-full px-4 h-14 rounded-2xl border border-line bg-paper-warm/30 text-ink placeholder:text-ink-soft/50 focus:outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 transition"
-          />
-          {error && <p className="text-sm text-clay">{error}</p>}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full h-14 rounded-2xl bg-sage text-paper font-medium hover:bg-sage-deep disabled:opacity-60 transition-colors"
-          >
-            {submitting ? "Building your plan..." : "See my plan"}
-          </button>
-          <p className="text-xs text-ink-soft/70 text-center">
-            By continuing you agree to occasional product emails. You can
-            unsubscribe anytime.
-          </p>
-        </form>
+      {error && <p className="mb-4 text-sm text-clay">{error}</p>}
+
+      {isQuestion(slot) && (
+        <QuestionRenderer
+          question={slot}
+          value={answers[slot.id]}
+          onSingle={onSingle}
+          onMulti={onMulti}
+          onSlider={onSlider}
+          onText={onText}
+          onContinue={onContinue}
+        />
       )}
 
-      {!emailMode && question && (
-        <div className="space-y-8">
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-ink leading-tight">
-              {question.prompt}
-            </h2>
-            {question.helper && (
-              <p className="mt-3 text-ink-soft leading-relaxed">
-                {question.helper}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-3">
-            {question.options.map((opt) => {
-              const selected =
-                question.type === "single"
-                  ? answers[question.id] === opt.value
-                  : (
-                      (answers[question.id] as string[] | undefined) ?? []
-                    ).includes(opt.value);
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() =>
-                    question.type === "single"
-                      ? answerSingle(opt.value)
-                      : toggleMulti(opt.value)
-                  }
-                  className={`w-full text-left px-5 py-4 rounded-2xl border transition-all ${
-                    selected
-                      ? "border-sage bg-sage/5 text-ink"
-                      : "border-line bg-paper hover:border-sage/40 hover:bg-paper-warm/30 text-ink"
-                  }`}
-                >
-                  <span className="block font-medium">{opt.label}</span>
-                  {opt.helper && (
-                    <span className="mt-1 block text-sm text-ink-soft">
-                      {opt.helper}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {question.type === "multi" && (
-            <button
-              type="button"
-              onClick={continueMulti}
-              disabled={
-                !((answers[question.id] as string[] | undefined) ?? []).length
-              }
-              className="w-full h-14 rounded-2xl bg-sage text-paper font-medium hover:bg-sage-deep disabled:opacity-50 transition-colors"
-            >
-              Continue
-            </button>
-          )}
-        </div>
+      {isInterstitial(slot) && (
+        <InterstitialRenderer
+          slot={slot}
+          content={slot.render(answers)}
+          onContinue={onInterstitialContinue}
+        />
       )}
     </div>
   );
