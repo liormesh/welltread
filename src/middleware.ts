@@ -37,7 +37,10 @@ export function middleware(req: NextRequest) {
       pathname === "/icon.svg" ||
       pathname === "/apple-icon.png" ||
       pathname === "/manifest.webmanifest" ||
-      pathname === "/og-image.png";
+      pathname === "/og-image.png" ||
+      pathname === "/privacy" ||
+      pathname === "/terms" ||
+      pathname === "/health-disclaimer";
 
     if (!passThrough) {
       const target = pathname === "/" ? "/app/today" : `/app${pathname}`;

@@ -69,6 +69,17 @@ export default async function Profile() {
           </div>
         </div>
 
+        <div className="px-6 mt-8">
+          <p className="text-xs uppercase tracking-[0.2em] text-clay mb-3">
+            Legal
+          </p>
+          <div className="space-y-2.5">
+            <ActionRow title="Privacy Policy" body="How we handle your data." href="/privacy" />
+            <ActionRow title="Terms of Service" body="The rules of using Welltread." href="/terms" />
+            <ActionRow title="Health Disclaimer" body="Welltread is not medical advice." href="/health-disclaimer" />
+          </div>
+        </div>
+
         <div className="px-6 mt-10 pt-6 border-t border-line/60">
           <SignOutButton />
         </div>
