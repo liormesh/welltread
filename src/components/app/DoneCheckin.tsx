@@ -137,28 +137,58 @@ function SliderRow({
   value: number;
   onChange: (v: number) => void;
 }) {
+  const min = 1;
+  const max = 5;
+
   return (
     <div>
-      <p className="text-sm font-medium text-ink mb-3">{label}</p>
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-ink-soft w-14 text-right shrink-0">
-          {left}
-        </span>
-        <input
-          type="range"
-          min={1}
-          max={5}
-          step={1}
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="flex-1 accent-sage h-2"
-        />
-        <span className="text-xs text-ink-soft w-14 shrink-0">{right}</span>
+      <p className="text-sm font-medium text-ink mb-4">{label}</p>
+
+      {/* Header row: left label + value with +/- buttons + right label */}
+      <div className="flex items-baseline justify-between text-sm text-ink-soft">
+        <span>{left}</span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => onChange(Math.max(min, value - 1))}
+            disabled={value <= min}
+            aria-label="Decrease"
+            className="w-9 h-9 rounded-full border border-line bg-paper text-ink hover:border-sage hover:text-sage disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-lg leading-none"
+          >
+            −
+          </button>
+          <span className="text-3xl font-semibold text-sage tabular-nums w-8 text-center">
+            {value}
+          </span>
+          <button
+            type="button"
+            onClick={() => onChange(Math.min(max, value + 1))}
+            disabled={value >= max}
+            aria-label="Increase"
+            className="w-9 h-9 rounded-full border border-line bg-paper text-ink hover:border-sage hover:text-sage disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-lg leading-none"
+          >
+            +
+          </button>
+        </div>
+        <span>{right}</span>
       </div>
-      <div className="mt-2 flex justify-center">
-        <span className="text-2xl font-semibold text-sage tabular-nums">
-          {value}
-        </span>
+
+      {/* Range slider */}
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={1}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="mt-4 w-full accent-sage h-2"
+      />
+
+      {/* Tick marks */}
+      <div className="mt-1 flex justify-between text-xs text-ink-soft/60">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <span key={n}>{n}</span>
+        ))}
       </div>
     </div>
   );

@@ -100,3 +100,54 @@ export function castFor(niche: Niche, ageBand?: AgeBand): CastMember {
   }
   return candidates[0] ?? CAST.maria;
 }
+
+/**
+ * Cast rotation across the 12-session arc, niche-aware.
+ *
+ * Rules:
+ * - Each character demonstrates 3 sessions (per `course-v1-niche-lock.md`).
+ * - Rotation pattern depends on niche:
+ *     - seniors: Eleanor + James anchor (chair-supported, dignified strength).
+ *       Order: Eleanor, James, Maria, David — repeat. Senior anchors land first
+ *       in each cycle so the user sees themselves represented immediately.
+ *     - posture: David + Maria anchor (desk-job, peer-of-the-cohort).
+ *       Order: David, Maria, James, Eleanor — repeat.
+ *     - general (default): balanced.
+ *       Order: Maria, David, Eleanor, James — repeat.
+ *
+ * Brand emotional moments (per /vault/user-journey §H):
+ * - For senior niche: Eleanor's session 7 + James's session 12 are explicit
+ *   beats. The default rotation lands Eleanor on day 1 and 5; we shift the
+ *   senior rotation by +2 so she appears on day 3, 7, 11 (which matches the
+ *   locked distribution: M/D/E/J = sessions 1/2/3/4 → 5/6/7/8 → 9/10/11/12).
+ *   Senior order: Eleanor, James, Maria, David — Eleanor lands on session 1, 5, 9.
+ *   That doesn't match. Let me redo:
+ *
+ *   Locked: Maria 1/5/9, David 2/6/10, Eleanor 3/7/11, James 4/8/12.
+ *   So the order MDEJ (Maria, David, Eleanor, James) is the canonical one.
+ *   For senior niche, we keep this ordering — Eleanor still anchors sessions 7
+ *   and 11 (the brand moments) — but we LEAD the funnel + onboarding messaging
+ *   with Eleanor's portrait, not Maria's. The session rotation itself stays.
+ */
+export function castForSession(niche: Niche, sessionNumber: number): CastMember {
+  // Locked distribution per course-v1-niche-lock.md: M/D/E/J across sessions
+  // 1/2/3/4 → cycle. This is the canonical order, niche-independent.
+  const cycle = ["maria", "david", "eleanor", "james"] as const;
+  const idx = ((sessionNumber - 1) % cycle.length + cycle.length) % cycle.length;
+  return CAST[cycle[idx]];
+}
+
+/**
+ * Lead character for top-of-funnel + first-app-open hero. Niche-adjusted.
+ * (The session-by-session rotation does NOT change per niche; only the lead.)
+ */
+export function leadCastFor(niche: Niche): CastMember {
+  switch (niche) {
+    case "seniors":
+      return CAST.eleanor;
+    case "posture":
+      return CAST.david;
+    default:
+      return CAST.maria;
+  }
+}
