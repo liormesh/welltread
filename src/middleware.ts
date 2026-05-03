@@ -32,7 +32,11 @@ export function middleware(req: NextRequest) {
       pathname.startsWith("/shapes/") ||
       pathname.startsWith("/samples/") ||
       pathname.startsWith("/videos/") ||
-      pathname === "/favicon.ico";
+      pathname.startsWith("/brand/") ||
+      pathname === "/favicon.ico" ||
+      pathname === "/icon.svg" ||
+      pathname === "/apple-icon.png" ||
+      pathname === "/manifest.webmanifest";
 
     if (!passThrough) {
       const target = pathname === "/" ? "/app/today" : `/app${pathname}`;
