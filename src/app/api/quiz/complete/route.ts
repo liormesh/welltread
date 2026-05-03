@@ -1,15 +1,29 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { normalizeActivity } from "@/lib/ai/activity";
+
+type AnswerValue = string | string[] | number;
 
 type Body = {
   id?: string;
   email?: string;
-  answers?: Record<string, string | string[]>;
+  answers?: Record<string, AnswerValue>;
   niche?: string;
 };
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const ACTIVITY_CHIP_VALUES = new Set([
+  "garden",
+  "stairs",
+  "grandkids",
+  "hike",
+  "floor",
+  "sleep",
+  "walks",
+  "tennis",
+]);
 
 export async function POST(req: Request) {
   try {
@@ -30,10 +44,9 @@ export async function POST(req: Request) {
     const email = body.email.toLowerCase().trim();
     const supabase = createServiceClient();
 
-    // Pull session for utm passthrough
     const { data: session, error: readErr } = await supabase
       .from("quiz_sessions")
-      .select("utm, niche")
+      .select("utm, niche, metadata")
       .eq("id", body.id)
       .single();
 
@@ -47,12 +60,12 @@ export async function POST(req: Request) {
       body.niche === "posture" ||
       body.niche === "general"
         ? body.niche
-        : (session.niche ?? "general");
+        : (session.niche as string | null) ?? "general";
 
     const source =
       (session.utm as Record<string, string> | null)?.source ?? "home";
 
-    // Upsert email signup. If duplicate, fetch existing id.
+    // Email signup upsert (idempotent)
     let signupId: string | null = null;
     const { data: inserted, error: insertErr } = await supabase
       .from("email_signups")
@@ -79,9 +92,29 @@ export async function POST(req: Request) {
       signupId = inserted?.id ?? null;
     }
 
+    // Normalize the Q19 free-text activity (best-effort, never blocks completion)
+    let normalizedActivity: string | null = null;
+    const q19 = body.answers?.["Q19"];
+    if (typeof q19 === "string" && q19.trim().length > 0 && !ACTIVITY_CHIP_VALUES.has(q19.trim())) {
+      normalizedActivity = await normalizeActivity(
+        q19,
+        niche as "seniors" | "posture" | "general",
+      );
+    }
+
+    // Store back on the session metadata so the plan reveal can use it
+    const existingMetadata =
+      typeof session.metadata === "object" && session.metadata !== null
+        ? (session.metadata as Record<string, unknown>)
+        : {};
+
     const update: Record<string, unknown> = {
       completed_at: new Date().toISOString(),
       niche,
+      metadata: {
+        ...existingMetadata,
+        ...(normalizedActivity ? { normalized_activity: normalizedActivity } : {}),
+      },
     };
     if (body.answers && typeof body.answers === "object") {
       update.answers = body.answers;
@@ -100,7 +133,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      normalized_activity: normalizedActivity,
+    });
   } catch (err) {
     console.error("[quiz/complete] unhandled", err);
     return NextResponse.json({ error: "Bad request" }, { status: 400 });

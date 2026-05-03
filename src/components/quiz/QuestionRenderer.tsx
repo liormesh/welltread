@@ -306,10 +306,19 @@ function IconCards({
   value: string | undefined;
   onSingle: (v: string) => void;
 }) {
+  // Map icon name to intensity level (1-4) for the activity question
+  const intensityFor: Record<string, number> = {
+    chair: 1,
+    walk: 2,
+    run: 3,
+    mountain: 4,
+  };
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {cards.map((c) => {
         const selected = value === c.value;
+        const intensity = intensityFor[c.icon] ?? 1;
         return (
           <button
             key={c.value}
@@ -323,7 +332,7 @@ function IconCards({
           >
             <ActivityIcon
               name={c.icon}
-              className={selected ? "text-sage" : "text-ink-soft"}
+              selected={selected}
             />
             <span
               className={`text-sm font-medium text-center ${
@@ -332,6 +341,7 @@ function IconCards({
             >
               {c.label}
             </span>
+            <IntensityMeter level={intensity} selected={selected} />
           </button>
         );
       })}
@@ -339,83 +349,131 @@ function IconCards({
   );
 }
 
+function IntensityMeter({ level, selected }: { level: number; selected: boolean }) {
+  return (
+    <div className="flex items-end gap-1 h-4">
+      {[1, 2, 3, 4].map((n) => {
+        const filled = n <= level;
+        const heightClass =
+          n === 1 ? "h-1.5" : n === 2 ? "h-2.5" : n === 3 ? "h-3" : "h-4";
+        return (
+          <span
+            key={n}
+            className={`w-1.5 rounded-sm ${heightClass} ${
+              filled
+                ? selected
+                  ? "bg-sage"
+                  : "bg-sage/70"
+                : "bg-line"
+            }`}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 /**
- * Activity icons. Designed to read at small sizes.
- * Each is a simple recognizable pictogram in single-stroke sage.
+ * Activity icons - more illustrative pictograms with concrete visual metaphors.
+ * Sedentary=lounge chair with cushion. Some=walking shoe in motion. Active=yoga pose. Athletic=mountain trail with figure.
  */
-function ActivityIcon({ name, className }: { name: string; className?: string }) {
-  const stroke = "currentColor";
-  const baseProps = {
-    fill: "none",
-    stroke,
-    strokeWidth: "1.6",
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
+function ActivityIcon({ name, selected }: { name: string; selected: boolean }) {
+  const sage = "#2D4F4A";
+  const sageSoft = "#4A6B66";
+  const ink = "#4B5152";
+  const main = selected ? sage : ink;
+  const accent = selected ? sage : sageSoft;
 
   switch (name) {
     case "chair":
-      // Person sitting on a chair - profile view
+      // Comfortable lounge chair with cushion - "sedentary" = at-home, no judgment
       return (
-        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} {...baseProps}>
-          {/* head */}
-          <circle cx="20" cy="12" r="3" />
-          {/* torso slumped forward */}
-          <path d="M20 15 L20 26 L28 26" />
-          {/* legs bent at knee */}
-          <path d="M28 26 L30 36 L36 36" />
-          {/* chair seat */}
-          <path d="M14 28 L32 28" />
+        <svg viewBox="0 0 56 48" className="w-14 h-12" xmlns="http://www.w3.org/2000/svg">
           {/* chair back */}
-          <path d="M14 28 L14 14" />
-          {/* chair legs */}
-          <path d="M16 28 L16 40 M30 28 L30 40" />
+          <path
+            d="M14 30 Q14 14, 22 12 L34 12 Q42 14, 42 30"
+            fill="none"
+            stroke={main}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          {/* cushion / seat */}
+          <path
+            d="M12 30 L44 30 L44 36 Q44 38, 42 38 L14 38 Q12 38, 12 36 Z"
+            fill={accent}
+            opacity={selected ? "0.25" : "0.15"}
+            stroke={main}
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+          {/* legs */}
+          <path
+            d="M16 38 L16 44 M40 38 L40 44"
+            stroke={main}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          {/* coffee mug on side */}
+          <circle cx="50" cy="34" r="2.5" fill="none" stroke={accent} strokeWidth="1.5" />
+          <path d="M50 30 L 50 28" stroke={accent} strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
         </svg>
       );
 
     case "walk":
-      // Walking person - one foot forward, mid-stride
+      // Profile of person walking with motion lines - mid-stride
       return (
-        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} {...baseProps}>
+        <svg viewBox="0 0 48 48" className="w-12 h-12" xmlns="http://www.w3.org/2000/svg">
           {/* head */}
-          <circle cx="24" cy="9" r="3" />
+          <circle cx="24" cy="10" r="3.5" fill="none" stroke={main} strokeWidth="2" />
           {/* torso */}
-          <path d="M24 13 L24 27" />
-          {/* arms - one forward one back */}
-          <path d="M24 17 L18 23 M24 17 L31 22" />
-          {/* legs - mid-stride */}
-          <path d="M24 27 L18 38 L17 42" />
-          <path d="M24 27 L30 35 L33 41" />
+          <path d="M24 14 L24 26" stroke={main} strokeWidth="2.2" strokeLinecap="round" />
+          {/* arm forward (bent slightly) */}
+          <path d="M24 17 L31 22 L33 26" stroke={main} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          {/* arm back */}
+          <path d="M24 17 L17 21" stroke={main} strokeWidth="2" strokeLinecap="round" />
+          {/* leg forward */}
+          <path d="M24 26 L30 36 L32 42" stroke={main} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          {/* leg back */}
+          <path d="M24 26 L18 38 L17 42" stroke={main} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          {/* motion lines */}
+          <path d="M8 18 L11 18 M9 22 L13 22 M10 26 L13 26" stroke={accent} strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
         </svg>
       );
 
     case "run":
-      // Runner - dynamic pose, leaning forward
+      // Yoga figure - seated forward fold, "active" lifestyle archetype
       return (
-        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} {...baseProps}>
+        <svg viewBox="0 0 48 48" className="w-12 h-12" xmlns="http://www.w3.org/2000/svg">
+          {/* yoga mat */}
+          <rect x="4" y="36" width="40" height="4" rx="1.5" fill={accent} opacity={selected ? "0.25" : "0.15"} />
+          <rect x="4" y="36" width="40" height="4" rx="1.5" fill="none" stroke={main} strokeWidth="1.6" />
           {/* head */}
-          <circle cx="29" cy="9" r="3" />
-          {/* torso angled */}
-          <path d="M28 13 L21 25" />
-          {/* arms - swinging */}
-          <path d="M27 15 L34 19 M22 22 L14 24" />
-          {/* legs - one extended back, one bent forward */}
-          <path d="M21 25 L29 33 L36 33" />
-          <path d="M21 25 L13 32 L10 38" />
+          <circle cx="14" cy="18" r="3.5" fill="none" stroke={main} strokeWidth="2" />
+          {/* torso (folded forward) */}
+          <path d="M14 22 Q18 26 24 28" stroke={main} strokeWidth="2.2" strokeLinecap="round" fill="none" />
+          {/* arms reaching forward */}
+          <path d="M14 22 Q22 30 32 32" stroke={main} strokeWidth="2" strokeLinecap="round" fill="none" />
+          {/* legs (extended) */}
+          <path d="M24 28 L36 30 L40 32" stroke={main} strokeWidth="2.2" strokeLinecap="round" fill="none" />
+          <path d="M24 28 L36 34" stroke={main} strokeWidth="2.2" strokeLinecap="round" fill="none" />
         </svg>
       );
 
     case "mountain":
-      // Mountain peak with sun - aspirational outdoor
+      // Mountain trail with hiker figure - athletic outdoor
       return (
-        <svg viewBox="0 0 48 48" className={`w-12 h-12 ${className}`} {...baseProps}>
+        <svg viewBox="0 0 48 48" className="w-12 h-12" xmlns="http://www.w3.org/2000/svg">
           {/* sun */}
-          <circle cx="35" cy="14" r="3" />
-          {/* mountain back */}
-          <path d="M5 38 L18 18 L26 30 L34 22 L43 38 Z" />
-          {/* snowcap */}
-          <path d="M16 22 L18 18 L20 22" />
-          <path d="M32 25 L34 22 L36 25" />
+          <circle cx="38" cy="11" r="2.8" fill={accent} opacity={selected ? "0.6" : "0.4"} />
+          {/* back mountain */}
+          <path d="M2 40 L14 22 L24 32 L34 18 L46 40 Z" fill={accent} opacity={selected ? "0.18" : "0.1"} stroke={main} strokeWidth="2" strokeLinejoin="round" />
+          {/* snow caps */}
+          <path d="M11 26 L14 22 L17 26" fill="none" stroke={main} strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M30 22 L34 18 L38 22" fill="none" stroke={main} strokeWidth="1.4" strokeLinejoin="round" />
+          {/* hiker silhouette small on trail */}
+          <circle cx="22" cy="36" r="1.5" fill={main} />
+          <path d="M22 38 L 22 41 M21 39 L 23 39" stroke={main} strokeWidth="1.4" strokeLinecap="round" />
         </svg>
       );
 

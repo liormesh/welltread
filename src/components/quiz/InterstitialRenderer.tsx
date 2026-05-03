@@ -89,26 +89,41 @@ function LoaderScreen({
 
   const progress = Math.min(100, ((step + 1) / messages.length) * 100);
 
+  // Reserve a fixed height for the message area so the breath stays anchored
+  // even as messages append. Without this, each new line pushes the breath up.
+  const lineHeight = 28; // px per line (approx tight line-height for text-sm)
+  const reservedLines = messages.length;
+
   return (
-    <div className="min-h-[460px] flex items-center justify-center">
-      <div className="text-center max-w-md">
-        <div className="mx-auto mb-10">
-          <BreathPulse />
-        </div>
+    <div className="flex flex-col items-center justify-start py-8">
+      {/* Fixed-position breath - never moves */}
+      <div className="mb-10">
+        <BreathPulse />
+      </div>
+      <div className="text-center max-w-md w-full">
         <h2 className="text-2xl font-semibold tracking-tight text-ink mb-6">
           {content.headline}
         </h2>
-        <div className="space-y-2 min-h-[80px]">
-          {messages.slice(0, step + 1).map((m, i) => (
-            <p
-              key={i}
-              className={`text-sm transition-opacity duration-500 ${
-                i === step ? "text-sage" : "text-ink-soft/70"
-              }`}
-            >
-              {m.endsWith(".") ? m : `${m}.`}
-            </p>
-          ))}
+        {/* Fixed-height container reserves space for ALL messages,
+            so adding lines doesn't push other elements. */}
+        <div
+          className="relative"
+          style={{ height: `${reservedLines * lineHeight}px` }}
+        >
+          {messages.map((m, i) => {
+            const visible = i <= step;
+            return (
+              <p
+                key={i}
+                className={`absolute left-0 right-0 text-sm transition-opacity duration-500 ${
+                  i === step ? "text-sage" : "text-ink-soft/70"
+                } ${visible ? "opacity-100" : "opacity-0"}`}
+                style={{ top: `${i * lineHeight}px` }}
+              >
+                {m.endsWith(".") ? m : `${m}.`}
+              </p>
+            );
+          })}
         </div>
         <div className="mt-10 max-w-xs mx-auto">
           <div className="h-1 w-full bg-line/50 rounded-full overflow-hidden">

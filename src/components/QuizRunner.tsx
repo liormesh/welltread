@@ -35,6 +35,8 @@ type Persisted = {
   history: string[];
   current: string;
   answers: Answers;
+  /** Set after /api/quiz/complete runs successfully. Read by /plan reveal. */
+  normalizedActivity?: string | null;
 };
 
 function loadPersisted(): Persisted | null {
@@ -220,6 +222,10 @@ export function QuizRunner() {
       });
       if (!res.ok) throw new Error();
 
+      const completePayload = (await res.json().catch(() => null)) as
+        | { ok: true; normalized_activity?: string | null }
+        | null;
+
       savePersisted({
         id: sessionId,
         source,
@@ -227,6 +233,7 @@ export function QuizRunner() {
         history: finalHistory,
         current: "DONE",
         answers: finalAnswers,
+        normalizedActivity: completePayload?.normalized_activity ?? null,
       });
 
       router.push("/plan");

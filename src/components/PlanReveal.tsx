@@ -18,6 +18,7 @@ type Persisted = {
   id: string;
   source: Source;
   answers: Answers;
+  normalizedActivity?: string | null;
 };
 
 export function PlanReveal() {
@@ -35,7 +36,14 @@ export function PlanReveal() {
       const parsed = JSON.parse(raw) as Persisted;
       const resolvedNiche = resolveNiche(parsed.source, parsed.answers);
       setNiche(resolvedNiche);
-      setPlan(previewPlan(resolvedNiche, parsed.answers));
+      const previewed = previewPlan(resolvedNiche, parsed.answers);
+      // If we have a normalized activity from Claude, override the local parse.
+      // This produces tighter, more grammatical hero copy than the heuristic.
+      if (parsed.normalizedActivity) {
+        previewed.activity = parsed.normalizedActivity;
+        previewed.activityIsChip = true; // treat normalized output as ready-for-template
+      }
+      setPlan(previewed);
       const ageBand = resolveAgeBand(parsed.answers);
       const cast = castFor(resolvedNiche, ageBand);
       setCastImage(cast.canonicalImage);
