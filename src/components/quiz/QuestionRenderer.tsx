@@ -306,42 +306,31 @@ function IconCards({
   value: string | undefined;
   onSingle: (v: string) => void;
 }) {
-  // Map icon name to intensity level (1-4) for the activity question
-  const intensityFor: Record<string, number> = {
-    chair: 1,
-    walk: 2,
-    run: 3,
-    mountain: 4,
-  };
-
+  // Each card represents an intensity level 1..N (left to right).
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {cards.map((c) => {
+      {cards.map((c, idx) => {
         const selected = value === c.value;
-        const intensity = intensityFor[c.icon] ?? 1;
+        const intensity = idx + 1; // 1, 2, 3, 4
         return (
           <button
             key={c.value}
             type="button"
             onClick={() => onSingle(c.value)}
-            className={`rounded-2xl border p-5 flex flex-col items-center gap-3 transition-all ${
+            className={`rounded-2xl border py-7 px-4 flex flex-col items-center gap-5 transition-all ${
               selected
                 ? "border-sage bg-sage/5 ring-2 ring-sage/20"
                 : "border-line bg-paper hover:border-sage/40 hover:bg-paper-warm/30"
             }`}
           >
-            <ActivityIcon
-              name={c.icon}
-              selected={selected}
-            />
+            <IntensityMeter level={intensity} selected={selected} />
             <span
-              className={`text-sm font-medium text-center ${
+              className={`text-sm font-medium text-center leading-tight ${
                 selected ? "text-sage" : "text-ink"
               }`}
             >
               {c.label}
             </span>
-            <IntensityMeter level={intensity} selected={selected} />
           </button>
         );
       })}
@@ -349,137 +338,37 @@ function IconCards({
   );
 }
 
-function IntensityMeter({ level, selected }: { level: number; selected: boolean }) {
+function IntensityMeter({
+  level,
+  selected,
+}: {
+  level: number;
+  selected: boolean;
+}) {
+  // 4 bars, progressively taller. Filled bars use sage; unfilled use line.
   return (
-    <div className="flex items-end gap-1 h-4">
+    <div className="flex items-end gap-1.5 h-12">
       {[1, 2, 3, 4].map((n) => {
         const filled = n <= level;
         const heightClass =
-          n === 1 ? "h-1.5" : n === 2 ? "h-2.5" : n === 3 ? "h-3" : "h-4";
+          n === 1
+            ? "h-3"
+            : n === 2
+              ? "h-6"
+              : n === 3
+                ? "h-9"
+                : "h-12";
         return (
           <span
             key={n}
-            className={`w-1.5 rounded-sm ${heightClass} ${
-              filled
-                ? selected
-                  ? "bg-sage"
-                  : "bg-sage/70"
-                : "bg-line"
+            className={`w-2.5 rounded-sm transition-colors ${heightClass} ${
+              filled ? (selected ? "bg-sage" : "bg-sage/70") : "bg-line"
             }`}
           />
         );
       })}
     </div>
   );
-}
-
-/**
- * Activity icons - more illustrative pictograms with concrete visual metaphors.
- * Sedentary=lounge chair with cushion. Some=walking shoe in motion. Active=yoga pose. Athletic=mountain trail with figure.
- */
-function ActivityIcon({ name, selected }: { name: string; selected: boolean }) {
-  const sage = "#2D4F4A";
-  const sageSoft = "#4A6B66";
-  const ink = "#4B5152";
-  const main = selected ? sage : ink;
-  const accent = selected ? sage : sageSoft;
-
-  switch (name) {
-    case "chair":
-      // Comfortable lounge chair with cushion - "sedentary" = at-home, no judgment
-      return (
-        <svg viewBox="0 0 56 48" className="w-14 h-12" xmlns="http://www.w3.org/2000/svg">
-          {/* chair back */}
-          <path
-            d="M14 30 Q14 14, 22 12 L34 12 Q42 14, 42 30"
-            fill="none"
-            stroke={main}
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          {/* cushion / seat */}
-          <path
-            d="M12 30 L44 30 L44 36 Q44 38, 42 38 L14 38 Q12 38, 12 36 Z"
-            fill={accent}
-            opacity={selected ? "0.25" : "0.15"}
-            stroke={main}
-            strokeWidth="2"
-            strokeLinejoin="round"
-          />
-          {/* legs */}
-          <path
-            d="M16 38 L16 44 M40 38 L40 44"
-            stroke={main}
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          {/* coffee mug on side */}
-          <circle cx="50" cy="34" r="2.5" fill="none" stroke={accent} strokeWidth="1.5" />
-          <path d="M50 30 L 50 28" stroke={accent} strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
-        </svg>
-      );
-
-    case "walk":
-      // Profile of person walking with motion lines - mid-stride
-      return (
-        <svg viewBox="0 0 48 48" className="w-12 h-12" xmlns="http://www.w3.org/2000/svg">
-          {/* head */}
-          <circle cx="24" cy="10" r="3.5" fill="none" stroke={main} strokeWidth="2" />
-          {/* torso */}
-          <path d="M24 14 L24 26" stroke={main} strokeWidth="2.2" strokeLinecap="round" />
-          {/* arm forward (bent slightly) */}
-          <path d="M24 17 L31 22 L33 26" stroke={main} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-          {/* arm back */}
-          <path d="M24 17 L17 21" stroke={main} strokeWidth="2" strokeLinecap="round" />
-          {/* leg forward */}
-          <path d="M24 26 L30 36 L32 42" stroke={main} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-          {/* leg back */}
-          <path d="M24 26 L18 38 L17 42" stroke={main} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-          {/* motion lines */}
-          <path d="M8 18 L11 18 M9 22 L13 22 M10 26 L13 26" stroke={accent} strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
-        </svg>
-      );
-
-    case "run":
-      // Yoga figure - seated forward fold, "active" lifestyle archetype
-      return (
-        <svg viewBox="0 0 48 48" className="w-12 h-12" xmlns="http://www.w3.org/2000/svg">
-          {/* yoga mat */}
-          <rect x="4" y="36" width="40" height="4" rx="1.5" fill={accent} opacity={selected ? "0.25" : "0.15"} />
-          <rect x="4" y="36" width="40" height="4" rx="1.5" fill="none" stroke={main} strokeWidth="1.6" />
-          {/* head */}
-          <circle cx="14" cy="18" r="3.5" fill="none" stroke={main} strokeWidth="2" />
-          {/* torso (folded forward) */}
-          <path d="M14 22 Q18 26 24 28" stroke={main} strokeWidth="2.2" strokeLinecap="round" fill="none" />
-          {/* arms reaching forward */}
-          <path d="M14 22 Q22 30 32 32" stroke={main} strokeWidth="2" strokeLinecap="round" fill="none" />
-          {/* legs (extended) */}
-          <path d="M24 28 L36 30 L40 32" stroke={main} strokeWidth="2.2" strokeLinecap="round" fill="none" />
-          <path d="M24 28 L36 34" stroke={main} strokeWidth="2.2" strokeLinecap="round" fill="none" />
-        </svg>
-      );
-
-    case "mountain":
-      // Mountain trail with hiker figure - athletic outdoor
-      return (
-        <svg viewBox="0 0 48 48" className="w-12 h-12" xmlns="http://www.w3.org/2000/svg">
-          {/* sun */}
-          <circle cx="38" cy="11" r="2.8" fill={accent} opacity={selected ? "0.6" : "0.4"} />
-          {/* back mountain */}
-          <path d="M2 40 L14 22 L24 32 L34 18 L46 40 Z" fill={accent} opacity={selected ? "0.18" : "0.1"} stroke={main} strokeWidth="2" strokeLinejoin="round" />
-          {/* snow caps */}
-          <path d="M11 26 L14 22 L17 26" fill="none" stroke={main} strokeWidth="1.4" strokeLinejoin="round" />
-          <path d="M30 22 L34 18 L38 22" fill="none" stroke={main} strokeWidth="1.4" strokeLinejoin="round" />
-          {/* hiker silhouette small on trail */}
-          <circle cx="22" cy="36" r="1.5" fill={main} />
-          <path d="M22 38 L 22 41 M21 39 L 23 39" stroke={main} strokeWidth="1.4" strokeLinecap="round" />
-        </svg>
-      );
-
-    default:
-      return null;
-  }
 }
 
 function Slider1to10({

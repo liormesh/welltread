@@ -65,6 +65,18 @@ export default function VaultIndex() {
             title="UI rules"
             body="Selector style rules, icon vocabulary, imagery axiom, decision tree."
           />
+          <Card
+            href="/vault/trial-flow"
+            eyebrow="11"
+            title="$1 trial flow"
+            body="Stripe integration design. User flow, object model, webhooks, edge cases."
+          />
+          <Card
+            href="/vault/product-framework"
+            eyebrow="12"
+            title="Product framework"
+            body="The 12-week course. Content composition, daily delivery, adaptation, build phases."
+          />
         </div>
       </section>
 
