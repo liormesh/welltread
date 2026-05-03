@@ -40,7 +40,8 @@ export function middleware(req: NextRequest) {
       pathname === "/og-image.png" ||
       pathname === "/privacy" ||
       pathname === "/terms" ||
-      pathname === "/health-disclaimer";
+      pathname === "/health-disclaimer" ||
+      pathname === "/delete-account";
 
     if (!passThrough) {
       const target = pathname === "/" ? "/app/today" : `/app${pathname}`;
