@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="Welltread">
-  <title>Welltread</title>
-  <rect width="180" height="180" fill="#2d4f4a"/>
-  <g fill="#faf7f2">
-    <rect x="48" y="117" width="49.5" height="18" rx="9"/>
-    <rect x="65.25" y="81" width="49.5" height="18" rx="9"/>
-    <rect x="82.5" y="45" width="49.5" height="18" rx="9"/>
-  </g>
-</svg>
