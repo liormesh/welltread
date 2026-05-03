@@ -41,7 +41,8 @@ export function middleware(req: NextRequest) {
       pathname === "/privacy" ||
       pathname === "/terms" ||
       pathname === "/health-disclaimer" ||
-      pathname === "/delete-account";
+      pathname === "/delete-account" ||
+      pathname === "/data-deletion";
 
     if (!passThrough) {
       const target = pathname === "/" ? "/app/today" : `/app${pathname}`;
