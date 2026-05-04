@@ -34,6 +34,17 @@
 # brand exploration artifacts (kept local, not shipped)
 /public/logo-concepts/
 
+# TWA build artifacts and signing key (kept local, never committed)
+/twa/android.keystore
+/twa/*.aab
+/twa/*.apk
+/twa/build/
+/twa/.gradle/
+/twa/app/
+/twa/gradle/
+/twa/local.properties
+/twa/store_icon.png
+
 # debug
 npm-debug.log*
 yarn-debug.log*

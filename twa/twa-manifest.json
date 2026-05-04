@@ -1,0 +1,50 @@
+{
+  "packageId": "co.welltread.app",
+  "host": "welltread.app",
+  "name": "Welltread",
+  "launcherName": "Welltread",
+  "display": "standalone",
+  "themeColor": "#2D4F4A",
+  "navigationColor": "#2D4F4A",
+  "navigationColorDark": "#2D4F4A",
+  "navigationDividerColor": "#FAF7F2",
+  "navigationDividerColorDark": "#2D4F4A",
+  "backgroundColor": "#FAF7F2",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://welltread.app/apple-icon.png",
+  "maskableIconUrl": "https://welltread.app/icon.svg",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://welltread.app/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": "true",
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://welltread.app/",
+  "minSdkVersion": 23,
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [
+    "https://welltread.co"
+  ],
+  "retainedBundles": [],
+  "appVersion": "1.0.0",
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  }
+}

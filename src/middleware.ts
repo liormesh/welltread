@@ -25,6 +25,7 @@ export function middleware(req: NextRequest) {
     const passThrough =
       pathname.startsWith("/api/") ||
       pathname.startsWith("/_next/") ||
+      pathname.startsWith("/.well-known/") ||
       pathname.startsWith("/app/") ||
       pathname === "/app" ||
       pathname.startsWith("/cast/") ||
