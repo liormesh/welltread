@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Krea vs Google — Veo 3.1 Fast comparison · Welltread</title>
+<meta property="og:title" content="Krea vs Google — Veo 3.1 Fast comparison" />
+<meta property="og:description" content="Same model, same prompts, two delivery platforms. Help us pick which one to ship Welltread's video pipeline on." />
+<style>
+  :root {
+    --paper: #FAF8F4;
+    --paper-warm: #F4EFE6;
+    --sage: #7A9A8A;
+    --sage-deep: #5A7568;
+    --sage-bg: #EDF2EE;
+    --ink: #2A2A28;
+    --ink-soft: #6B6B68;
+    --line: #E5E1D8;
+    --clay: #B8826B;
+    --google: #4285F4;
+    --krea: #FF5722;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  header { border-bottom: 1px solid var(--line); padding: 24px 32px; background: var(--paper-warm); }
+  h1 { margin: 0 0 4px; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  h1 em { color: var(--sage-deep); font-style: italic; font-weight: 500; }
+  .subtitle { color: var(--ink-soft); font-size: 13px; max-width: 780px; }
+  .meta { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; font-size: 12px; }
+  .meta .pill { padding: 3px 10px; border-radius: 12px; background: white; border: 1px solid var(--line); }
+  .meta .pill.google { color: var(--google); border-color: var(--google); }
+  .meta .pill.krea { color: var(--krea); border-color: var(--krea); }
+
+  main { padding: 32px; max-width: 1400px; margin: 0 auto; }
+
+  .ask-block {
+    background: white; padding: 20px 24px; border-radius: 12px;
+    margin-bottom: 32px; border-left: 4px solid var(--clay);
+  }
+  .ask-block h2 { margin: 0 0 8px; font-size: 16px; }
+  .ask-block p { margin: 0 0 6px; color: var(--ink-soft); font-size: 13px; line-height: 1.6; }
+  .ask-block strong { color: var(--ink); }
+
+  .comparison {
+    margin-bottom: 48px; padding: 20px; background: white;
+    border-radius: 12px; border: 1px solid var(--line);
+  }
+  .comparison-head {
+    display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+  }
+  .comparison-head .clip-id { font-family: ui-monospace, monospace; font-size: 14px; font-weight: 600; }
+  .comparison-head .cast { font-size: 12px; color: var(--sage-deep); padding: 2px 8px; background: var(--sage-bg); border-radius: 8px; }
+  .comparison-head .angle { font-size: 11px; color: var(--ink-soft); font-family: ui-monospace, monospace; }
+
+  .pair {
+    display: grid;
+    grid-template-columns: 220px 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .pair { grid-template-columns: 1fr; } }
+
+  .col-still img {
+    width: 100%; aspect-ratio: 9/16; object-fit: cover;
+    border-radius: 8px; border: 1px solid var(--line);
+  }
+  .col-still .label { font-size: 11px; color: var(--ink-soft); margin-top: 6px; text-align: center; }
+
+  .col-video {
+    background: black; border-radius: 8px; overflow: hidden;
+    aspect-ratio: 9/16; position: relative;
+  }
+  .col-video video { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .col-video .platform-badge {
+    position: absolute; top: 10px; left: 10px;
+    padding: 4px 10px; border-radius: 12px; color: white;
+    font-size: 11px; font-family: ui-monospace, monospace; font-weight: 600;
+  }
+  .col-video .platform-badge.google { background: var(--google); }
+  .col-video .platform-badge.krea { background: var(--krea); }
+  .stats {
+    margin-top: 8px; font-size: 11px; color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .key-questions {
+    margin-top: 16px; padding: 12px; background: var(--paper-warm); border-radius: 6px;
+  }
+  .key-questions h3 { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: var(--sage-deep); text-transform: uppercase; letter-spacing: 0.05em; }
+  .key-questions ul { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 12px; }
+  .key-questions ul li { margin-bottom: 3px; }
+
+  .summary-section {
+    background: var(--paper-warm); padding: 20px; border-radius: 12px;
+    margin-bottom: 32px; border-left: 4px solid var(--sage);
+  }
+  .summary-section h2 { margin: 0 0 12px; font-size: 16px; }
+  .summary-section table { width: 100%; font-size: 12px; border-collapse: collapse; }
+  .summary-section table th, .summary-section table td {
+    padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--line);
+  }
+  .summary-section table th { font-weight: 600; background: white; }
+
+  footer {
+    margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line);
+    color: var(--ink-soft); font-size: 12px; text-align: center;
+  }
+  footer a { color: var(--sage-deep); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Krea vs Google — <em>Veo 3.1 Fast</em></h1>
+  <div class="subtitle">Same model, same prompts, same conditioning stills. Two delivery platforms. We're picking which one to ship Welltread's full video pipeline on (~166 clips total).</div>
+  <div class="meta">
+    <span class="pill">Model: Veo 3.1 Fast</span>
+    <span class="pill">9:16 · 8s · 720p · audio stripped</span>
+    <span class="pill google">Google direct</span>
+    <span class="pill krea">Krea</span>
+  </div>
+</header>
+
+<main>
+  <section class="ask-block">
+    <h2>What I'm asking from you</h2>
+    <p>Watch each pair side-by-side, ideally on a phone or tablet (the videos are 9:16 portrait — they're designed for mobile). They auto-loop.</p>
+    <p>For each cast member, tell me: <strong>does the Krea version land identity, mood, and breath rhythm as well as the Google version?</strong> If you'd switch one out for the other on the production pipeline based on what you see, which way?</p>
+    <p>Reply to whoever shared this with you — your gut reaction is more useful than line-by-line notes.</p>
+  </section>
+
+  <section class="summary-section">
+    <h2>Why this matters</h2>
+    <table>
+      <thead><tr><th>Dimension</th><th>Google direct</th><th>Krea (Pro plan)</th></tr></thead>
+      <tbody>
+        <tr><td>Cost per clip</td><td>~$2.00</td><td>~$0.80-1.20</td></tr>
+        <tr><td>Daily quota cap</td><td>~6-8 clips on Fast preview tier</td><td>~25-40/mo on Pro plan</td></tr>
+        <tr><td>Filter retry rate</td><td>~30-50% rerolls (audio safety filter)</td><td>0% in this test (4/4 first-attempt)</td></tr>
+        <tr><td>Generation wall-time</td><td>30-60s including retries</td><td>60-75s steady</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size: 13px; color: var(--ink-soft); margin: 12px 0 0;">
+      Krea is roughly half the cost and bypasses the daily quota wall we keep hitting on Google's preview tier.
+      The question is whether the output quality holds up.
+    </p>
+  </section>
+
+  <div class="comparison">
+    <div class="comparison-head">
+      <span class="clip-id">Maria · 52 · cohort anchor</span>
+      <span class="cast">Latina · ponytail · sage tank</span>
+      <span class="angle">Wide · full posture</span>
+    </div>
+    <div class="pair">
+      <div class="col-still">
+        <img src="maria-W-still.png" alt="Maria conditioning still" />
+        <div class="label">conditioning still</div>
+      </div>
+      <div>
+        <div class="col-video">
+          <span class="platform-badge google">Google direct</span>
+          <video src="maria-W-google.mp4" autoplay muted loop playsinline controls></video>
+        </div>
+        <div class="stats"><span>Veo 3.1 Fast (Google)</span><span>1st-attempt pass</span></div>
+      </div>
+      <div>
+        <div class="col-video">
+          <span class="platform-badge krea">Krea</span>
+          <video src="maria-W-krea.mp4" autoplay muted loop playsinline controls></video>
+        </div>
+        <div class="stats"><span>Veo 3.1 Fast (Krea)</span><span>62s wall-time</span></div>
+      </div>
+    </div>
+    <div class="key-questions">
+      <h3>What to compare</h3>
+      <ul>
+        <li>Identity match — is this the same Maria across both clips?</li>
+        <li>Breath subtlety — chest rise/fall the same gentleness?</li>
+        <li>Loop seamlessness — which lands cleaner at the loop boundary?</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <div class="comparison-head">
+      <span class="clip-id">David · 47 · glasses identity stress test</span>
+      <span class="cast">Salt-and-pepper · wire-frame glasses</span>
+      <span class="angle">Medium · cue close-up</span>
+    </div>
+    <div class="pair">
+      <div class="col-still">
+        <img src="david-M-still.png" alt="David conditioning still" />
+        <div class="label">conditioning still</div>
+      </div>
+      <div>
+        <div class="col-video">
+          <span class="platform-badge google">Google direct</span>
+          <video src="david-M-google.mp4" autoplay muted loop playsinline controls></video>
+        </div>
+        <div class="stats"><span>Veo 3.1 Fast (Google)</span><span>1st-attempt pass</span></div>
+      </div>
+      <div>
+        <div class="col-video">
+          <span class="platform-badge krea">Krea</span>
+          <video src="david-M-krea.mp4" autoplay muted loop playsinline controls></video>
+        </div>
+        <div class="stats"><span>Veo 3.1 Fast (Krea)</span><span>73s wall-time</span></div>
+      </div>
+    </div>
+    <div class="key-questions">
+      <h3>What to compare</h3>
+      <ul>
+        <li>Glasses fidelity — wire-frame round shape preserved? Light reflection drift?</li>
+        <li>Stubble continuity — two-day beard rendered consistently?</li>
+        <li>Eye warmth through lenses — soft contact, not vacant?</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <div class="comparison-head">
+      <span class="clip-id">Eleanor · 67 · age-affirming features</span>
+      <span class="cast">Silver-grey hair · smile lines · hazel eyes</span>
+      <span class="angle">Wide · full posture</span>
+    </div>
+    <div class="pair">
+      <div class="col-still">
+        <img src="eleanor-W-still.png" alt="Eleanor conditioning still" />
+        <div class="label">conditioning still</div>
+      </div>
+      <div>
+        <div class="col-video">
+          <span class="platform-badge google">Google direct</span>
+          <video src="eleanor-W-google.mp4" autoplay muted loop playsinline controls></video>
+        </div>
+        <div class="stats"><span>Veo 3.1 Fast (Google)</span><span>1st-attempt pass</span></div>
+      </div>
+      <div>
+        <div class="col-video">
+          <span class="platform-badge krea">Krea</span>
+          <video src="eleanor-W-krea.mp4" autoplay muted loop playsinline controls></video>
+        </div>
+        <div class="stats"><span>Veo 3.1 Fast (Krea)</span><span>73s wall-time</span></div>
+      </div>
+    </div>
+    <div class="key-questions">
+      <h3>What to compare</h3>
+      <ul>
+        <li>Silver-grey hair texture — wave preserved, no over-smoothing?</li>
+        <li>Smile lines — age-affirming, NOT smoothed away?</li>
+        <li>Critical: do either of them "youth-ify" Eleanor's face?</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <div class="comparison-head">
+      <span class="clip-id">James · 70 · dignified strength</span>
+      <span class="cast">Black · grey beard · sage henley</span>
+      <span class="angle">Wide · full posture</span>
+    </div>
+    <div class="pair">
+      <div class="col-still">
+        <img src="james-W-still.png" alt="James conditioning still" />
+        <div class="label">conditioning still</div>
+      </div>
+      <div>
+        <div class="col-video">
+          <span class="platform-badge google">Google direct</span>
+          <video src="james-W-google.mp4" autoplay muted loop playsinline controls></video>
+        </div>
+        <div class="stats"><span>Veo 3.1 Fast (Google)</span><span>1st-attempt pass</span></div>
+      </div>
+      <div>
+        <div class="col-video">
+          <span class="platform-badge krea">Krea</span>
+          <video src="james-W-krea.mp4" autoplay muted loop playsinline controls></video>
+        </div>
+        <div class="stats"><span>Veo 3.1 Fast (Krea)</span><span>65s wall-time</span></div>
+      </div>
+    </div>
+    <div class="key-questions">
+      <h3>What to compare</h3>
+      <ul>
+        <li>Beard line continuity — close-cropped, never bushy?</li>
+        <li>Posture dignity — upright, no slouching drift?</li>
+        <li>Calm-strong default expression — minimal smile preserved?</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    Welltread internal review · 2026-05-04
+  </footer>
+</main>
+</body>
+</html>
