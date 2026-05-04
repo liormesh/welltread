@@ -36,6 +36,7 @@
 
 # TWA build artifacts and signing key (kept local, never committed)
 /twa/android.keystore
+/twa/.keystore-password.local
 /twa/*.aab
 /twa/*.apk
 /twa/build/
@@ -44,6 +45,12 @@
 /twa/gradle/
 /twa/local.properties
 /twa/store_icon.png
+/twa/gradlew
+/twa/gradlew.bat
+/twa/gradle.properties
+/twa/build.gradle
+/twa/settings.gradle
+/twa/node_modules/
 
 # debug
 npm-debug.log*

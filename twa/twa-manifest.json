@@ -17,6 +17,7 @@
   "appVersionName": "1.0.0",
   "appVersionCode": 1,
   "shortcuts": [],
+  "splashScreenFadeOutDuration": 300,
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://welltread.app/manifest.webmanifest",
   "fallbackType": "customtabs",
