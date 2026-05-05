@@ -27,6 +27,31 @@ export function PlanReveal() {
   const [castImage, setCastImage] = useState<string>("/cast/maria.png");
   const [castName, setCastName] = useState<string>("Maria");
   const [hydrated, setHydrated] = useState(false);
+  const [quizSessionId, setQuizSessionId] = useState<string | null>(null);
+  const [checkingOut, setCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  async function startCheckout() {
+    setCheckingOut(true);
+    setCheckoutError(null);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quizSessionId }),
+      });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        setCheckoutError(data.error ?? "Could not start checkout. Please try again.");
+        setCheckingOut(false);
+        return;
+      }
+      window.location.href = data.url;
+    } catch {
+      setCheckoutError("Network error. Please try again.");
+      setCheckingOut(false);
+    }
+  }
 
   async function hydrateFromToken(token: string) {
     try {
@@ -48,6 +73,7 @@ export function PlanReveal() {
         normalizedActivity: data.normalizedActivity ?? null,
       };
       window.localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(persisted));
+      setQuizSessionId(persisted.id);
       const resolvedNiche = resolveNiche(persisted.source, persisted.answers);
       setNiche(resolvedNiche);
       const previewed = previewPlan(resolvedNiche, persisted.answers);
@@ -81,6 +107,7 @@ export function PlanReveal() {
       const raw = window.localStorage.getItem(QUIZ_STORAGE_KEY);
       if (!raw) return;
       const parsed = JSON.parse(raw) as Persisted;
+      setQuizSessionId(parsed.id);
       const resolvedNiche = resolveNiche(parsed.source, parsed.answers);
       setNiche(resolvedNiche);
       const previewed = previewPlan(resolvedNiche, parsed.answers);
@@ -260,22 +287,17 @@ export function PlanReveal() {
 
           <button
             type="button"
-            disabled
-            title="Stripe wiring next phase"
+            onClick={startCheckout}
+            disabled={checkingOut}
             className="mt-8 w-full h-14 rounded-2xl bg-sage text-paper font-medium hover:bg-sage-deep transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Start your $1 trial
+            {checkingOut ? "Opening checkout…" : "Start your $1 trial"}
           </button>
-          <button
-            type="button"
-            disabled
-            title="Stripe wiring next phase"
-            className="mt-3 w-full text-sm text-ink-soft hover:text-sage transition-colors disabled:cursor-not-allowed underline-offset-4 hover:underline"
-          >
-            Skip trial - pay now (30-day money-back)
-          </button>
+          {checkoutError && (
+            <p className="mt-3 text-xs text-clay text-center">{checkoutError}</p>
+          )}
           <p className="mt-4 text-xs text-ink-soft/70 text-center">
-            Niche: {niche}. Stripe checkout opens next phase. Your plan is saved.
+            Niche: {niche}. 7-day trial, then $59 every 3 months. Cancel anytime.
           </p>
         </div>
       </section>

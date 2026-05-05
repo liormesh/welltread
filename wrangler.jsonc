@@ -18,7 +18,11 @@
     "NEXT_PUBLIC_SUPABASE_URL": "https://xzjwbrtvxlluwjkjsmgr.supabase.co",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6andicnR2eGxsdXdqa2pzbWdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NTEyNTQsImV4cCI6MjA5MzIyNzI1NH0.hJuQtIWVpVDZqsO89UqeeVX7mEWvM3t1KlRDMb_LhZE",
     "EMAIL_FROM": "Welltread <hello@welltread.co>",
-    "EMAIL_REPLY_TO": "hello@welltread.co"
+    "EMAIL_REPLY_TO": "hello@welltread.co",
+    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51TTenLCi71bOyHaZ5evudu9tdU0kZJWpKINBdRGFujqRYJhxbXsNjnFZ4CbYVo8VNn2Zrc1KHR3cKnzJZ9x5w9TE00j35nv9Jx",
+    "STRIPE_PRICE_RECURRING": "price_1TTfn0Ci71bOyHaZdnhvGv1e",
+    "STRIPE_PRICE_TRIAL_FEE": "price_1TTfn1Ci71bOyHaZhF8MeCGn",
+    "NEXT_PUBLIC_APP_URL": "https://welltread.co"
   },
   "observability": {
     "enabled": true
