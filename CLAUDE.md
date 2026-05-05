@@ -4,12 +4,14 @@
 
 Personalized movement programs for adults 40+. Multi-niche mobility platform delivered via quiz-funnel app. Single backend serves Senior Mobility 60+, Posture & Back 40+, and (planned) postpartum / pelvic floor / GLP-1 companion.
 
-**State (2026-05-03 end-of-session):**
-- **Acquisition layer complete.** welltread.co live with home + niche LPs, 28-question quiz v2, AI-normalized plan reveal with cast-matched hero, Stripe-stubbed paywall.
-- **Product app (welltread.app) functional in demo mode.** `/app/today`, `/app/session/[id]` with 5-second transition + countdown ring + "this hurts" Phase 1 swap, `/app/done` check-in writing to `daily_completions`, `/app/week`, `/app/profile`, `/app/library` stub. Magic-link + password auth via Supabase. Demo user: `info@welltread.co` / `123abc`.
-- **Email pipeline live.** Resend domain `welltread.co` verified (DKIM + SPF + DMARC on Cloudflare). 16 templates with niche-lead cast headers. 8 acquisition emails wired to GH Actions cron (15-min tick).
-- **Vault complete.** 17 stakeholder-facing pages at welltread.co/vault.
-- **Blocked on Lior:** Stripe verification for US LLC, real movement videos (Veo thread), ElevenLabs voice IDs.
+**State (2026-05-05 end-of-session):**
+- **Acquisition layer complete.** welltread.co live with home + niche LPs, 28-question quiz v2, AI-normalized plan reveal with cast-matched hero. Paywall now wired to **real Stripe checkout** (POC, sandbox).
+- **Stripe POC live (sandbox).** `/api/stripe/checkout` → real Checkout Sessions ($1 trial fee + $59/3mo subscription, `trial_period_days=7`). `/api/stripe/webhook` signature-verifies + logs the 6 lifecycle events. `/app/welcome` post-checkout success page. Sandbox account = **UAB Rmedia ads** (LT entity, EUR default), distinct from future US LLC. Test card: `4242 4242 4242 4242`. Worker secrets `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` set via CF API.
+- **Product app (welltread.app) functional with real Session 1.** `buildSessionOne(leadCast)` in `src/lib/app/sample-plan.ts` produces a 12-min session: cast-matched bookends (box-breath + closing-breath, all 4 leads × M/W angles locked) + mixed-cast body using locked Cohort B + C clips. `/app/today`, `/app/session/[id]` with 5-second transition + countdown ring + "this hurts" Phase 1 swap, `/app/done` check-in, `/app/welcome` post-checkout. Demo user: `info@welltread.co` / `123abc`.
+- **Course library page live.** `/vault/course-library` surfaces all 4 cast portraits, 5 studio room references (canonical brand backdrops with skirting + residential-scale window), 28 locked clips across Cohort A/B/C. Production-deployed.
+- **Email pipeline live.** Resend domain `welltread.co` verified (DKIM + SPF + DMARC on Cloudflare). 16 templates with niche-lead cast headers. 8 acquisition emails wired to GH Actions cron (15-min tick). 8 trial/payment templates ready, hooked to Stripe webhook events on next pass.
+- **Vault complete.** 17 stakeholder-facing pages + course-library at welltread.co/vault.
+- **Blocked on Lior:** Stripe US-LLC verification (to flip from POC to live), remaining ~101 course videos for the full 12-week plan, ElevenLabs voice IDs.
 
 ## Stack
 
@@ -117,8 +119,11 @@ Definitions in `src/lib/visual/shapes.ts`. PNG files in `public/shapes/`. Six sh
 - `ANTHROPIC_API_KEY` - Q19 normalization
 - `RESEND_API_KEY` - email send
 - `EMAIL_TOKEN_SECRET` - HMAC for resume tokens (re-engagement emails)
+- `STRIPE_SECRET_KEY` - sandbox sk_test_... (UAB Rmedia ads). Swap for live key after US-LLC verification
+- `STRIPE_WEBHOOK_SECRET` - signing secret for endpoint `we_1TTfwy...`
 
-Future: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_*`.
+`vars` (non-secret, in `wrangler.jsonc`):
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_RECURRING`, `STRIPE_PRICE_TRIAL_FEE`, `NEXT_PUBLIC_APP_URL`
 
 ## Active niches
 
@@ -133,8 +138,8 @@ Future: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_*`.
 ## Next-steps queue (in order)
 
 **Blocked on Lior (external):**
-1. **Stripe verification** for the US LLC → unlocks trial flow (subsystems 09-11), welcome email, real account provisioning
-2. **Movement videos** from Veo / PT studio → swaps `sample-plan.ts` with real content
+1. **Stripe US-LLC verification** → flip POC sandbox keys (UAB Rmedia ads, LT) to live US-LLC keys. Integration is built and proven end-to-end in sandbox.
+2. **Remaining course videos** — ~101 of 129 still needed for full 12-week plan. Cohort C resume (10 clips) is the next batch. See `clip-generation-manifest.md`.
 3. **ElevenLabs voice IDs** for the 4 cast → unlocks audio narration
 
 **Unblocked, ready to build (recommended order):**

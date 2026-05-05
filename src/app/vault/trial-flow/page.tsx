@@ -200,8 +200,8 @@ export default function TrialFlow() {
         <ol className="space-y-4">
           <Phase
             n="P1"
-            title="Stripe Checkout MVP"
-            body="Single tier ($59 / 3-month default), $1 trial mechanic, basic webhook handling, account provisioning via magic link. Goal: convert one paying user end-to-end."
+            title="Stripe Checkout MVP — LIVE in sandbox (2026-05-05)"
+            body="Built: /api/stripe/checkout (subscription mode, $59/3mo recurring + $1 one-time fee, trial_period_days=7), /api/stripe/webhook (signature-verified, 6 lifecycle events logged), /app/welcome post-checkout. Webhook endpoint registered with Stripe. Worker secrets set. Sandbox account is UAB Rmedia ads (LT/EUR), separate from future US LLC. Plan provisioning logic — writing to subscriptions table on checkout.session.completed — is the next pass before live launch."
           />
           <Phase
             n="P2"
@@ -223,15 +223,12 @@ export default function TrialFlow() {
 
       <Section eyebrow="G" title="What's needed to ship P1">
         <ul className="space-y-3 text-ink leading-relaxed">
-          <Item>Stripe account verified + bank linked (the legal entity, US LLC)</Item>
-          <Item>Three Prices created in Stripe dashboard (1mo / 3mo / 12mo)</Item>
-          <Item>One Price for the $1 trial-start fee</Item>
-          <Item>STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET as Worker secrets</Item>
-          <Item>STRIPE_PRICE_ID_* env vars per tier</Item>
-          <Item>SUPABASE_SERVICE_ROLE_KEY (already set) for auth user creation</Item>
-          <Item>Resend API key for transactional emails (welcome, trial-end, failed-payment)</Item>
-          <Item><code className="text-xs bg-paper-warm/40 px-2 py-1 rounded">/api/checkout/start</code> + <code className="text-xs bg-paper-warm/40 px-2 py-1 rounded">/api/stripe/webhook</code> route handlers</Item>
+          <Item><span className="text-sage">✓ DONE (sandbox):</span> Stripe account, prices ($59/3mo + $1 trial fee), Worker secrets, /api/stripe/checkout + /api/stripe/webhook routes, webhook endpoint registered.</Item>
+          <Item>Stripe US-LLC verification — to flip from sandbox UAB Rmedia ads to live keys at launch</Item>
+          <Item>Plan provisioning on checkout.session.completed — write to <code className="text-xs bg-paper-warm/40 px-2 py-1 rounded">subscriptions</code> + <code className="text-xs bg-paper-warm/40 px-2 py-1 rounded">user_plans</code>, link Supabase auth user via email</Item>
           <Item>Database migration: <code className="text-xs bg-paper-warm/40 px-2 py-1 rounded">stripe_events</code> table for webhook idempotency</Item>
+          <Item>Tier selection (P2): wire 3-tier paywall to checkout; price_id per tier</Item>
+          <Item>Customer Portal (P2) embedded at /app/billing</Item>
         </ul>
       </Section>
     </div>
