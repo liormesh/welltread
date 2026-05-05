@@ -41,6 +41,24 @@ const COHORT_A: { slug: string; name: string; clips: Clip[] }[] = [
   },
 ];
 
+const COHORT_C: { slug: string; name: string; clips: Clip[] }[] = [
+  {
+    slug: "cat-cow-seated",
+    name: "Cat-cow (seated)",
+    clips: [{ id: "C-cat-cow-seated-MAR-W", cast: "Maria", angle: "W" }],
+  },
+  {
+    slug: "seated-figure-4",
+    name: "Seated figure-4",
+    clips: [{ id: "C-seated-figure-4-MAR-W", cast: "Maria", angle: "W" }],
+  },
+  {
+    slug: "weight-shifts",
+    name: "Weight shifts (standing)",
+    clips: [{ id: "C-weight-shifts-DAV-W", cast: "David", angle: "W" }],
+  },
+];
+
 const COHORT_B: { slug: string; name: string; clips: Clip[] }[] = [
   {
     slug: "body-scan",
@@ -170,6 +188,19 @@ export default function CourseLibrary() {
           per cast member.
         </p>
         {COHORT_B.map((mv) => (
+          <MovementBlock key={mv.slug} movement={mv} />
+        ))}
+      </section>
+
+      <section className="border-t border-line pt-10">
+        <h2 className="text-2xl font-semibold tracking-tight text-ink mb-2">
+          Cohort C — twice-used movements
+        </h2>
+        <p className="text-sm text-ink-soft mb-8">
+          Movements reused across exactly 2 sessions. Wide angle only at this
+          stage.
+        </p>
+        {COHORT_C.map((mv) => (
           <MovementBlock key={mv.slug} movement={mv} />
         ))}
       </section>
