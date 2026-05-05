@@ -127,12 +127,12 @@ export async function mintUnsubscribeToken(email: string): Promise<string | null
 export async function verifyUnsubscribeToken(token: string): Promise<string | null> {
   const secret = process.env.EMAIL_TOKEN_SECRET;
   if (!secret) return null;
-  const parts = token.split(".");
-  if (parts.length !== 2) return null;
-  const [payloadB64, signature] = parts;
-  const valid = await verify(payloadB64, signature, secret);
-  if (!valid) return null;
   try {
+    const parts = token.split(".");
+    if (parts.length !== 2) return null;
+    const [payloadB64, signature] = parts;
+    const valid = await verify(payloadB64, signature, secret);
+    if (!valid) return null;
     const payloadJson = new TextDecoder().decode(b64UrlToBuf(payloadB64));
     const payload = JSON.parse(payloadJson) as UnsubscribePayload;
     if (payload.exp < Math.floor(Date.now() / 1000)) return null;
