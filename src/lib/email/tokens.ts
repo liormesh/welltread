@@ -99,3 +99,46 @@ export async function verifyResumeToken(token: string): Promise<string | null> {
     return null;
   }
 }
+
+type UnsubscribePayload = {
+  e: string; // lowercased email
+  exp: number;
+};
+
+const UNSUB_TTL_DAYS = 365 * 5;
+
+/** Mint a long-lived unsubscribe token for an email address. */
+export async function mintUnsubscribeToken(email: string): Promise<string | null> {
+  const secret = process.env.EMAIL_TOKEN_SECRET;
+  if (!secret) {
+    console.warn("[email/tokens] EMAIL_TOKEN_SECRET not set");
+    return null;
+  }
+  const payload: UnsubscribePayload = {
+    e: email.trim().toLowerCase(),
+    exp: Math.floor(Date.now() / 1000) + UNSUB_TTL_DAYS * 86400,
+  };
+  const payloadB64 = bufToB64Url(strToBuf(JSON.stringify(payload)));
+  const signature = await sign(payloadB64, secret);
+  return `${payloadB64}.${signature}`;
+}
+
+/** Verify an unsubscribe token; returns the email if valid, null otherwise. */
+export async function verifyUnsubscribeToken(token: string): Promise<string | null> {
+  const secret = process.env.EMAIL_TOKEN_SECRET;
+  if (!secret) return null;
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const [payloadB64, signature] = parts;
+  const valid = await verify(payloadB64, signature, secret);
+  if (!valid) return null;
+  try {
+    const payloadJson = new TextDecoder().decode(b64UrlToBuf(payloadB64));
+    const payload = JSON.parse(payloadJson) as UnsubscribePayload;
+    if (payload.exp < Math.floor(Date.now() / 1000)) return null;
+    if (typeof payload.e !== "string" || !payload.e.includes("@")) return null;
+    return payload.e;
+  } catch {
+    return null;
+  }
+}

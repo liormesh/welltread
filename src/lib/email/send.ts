@@ -4,11 +4,13 @@
  */
 
 import { createServiceClient } from "@/lib/supabase/server";
+import { mintUnsubscribeToken } from "@/lib/email/tokens";
 
 const RESEND_BASE = "https://api.resend.com/emails";
 
 export const FROM_DEFAULT = "Welltread <hello@welltread.co>";
 export const REPLY_TO_DEFAULT = "hello@welltread.co";
+const UNSUB_BASE_URL = "https://welltread.co/api/unsubscribe";
 
 export type SendArgs = {
   templateId: string;
@@ -20,6 +22,10 @@ export type SendArgs = {
   quizSessionId?: string | null;
   emailSignupId?: string | null;
   profileId?: string | null;
+  /** Arbitrary metadata persisted to email_sends.metadata. Used as the idempotency
+   *  key for retention emails (week_index, completion_id) — callers handle their
+   *  own dedup check before calling sendEmail. */
+  metadata?: Record<string, unknown> | null;
   /** If true, skip the dedup check (manual resend) */
   skipDedupe?: boolean;
 };
@@ -36,6 +42,18 @@ export async function sendEmail(args: SendArgs): Promise<{ ok: boolean; reason?:
   }
 
   const supabase = createServiceClient();
+  const recipient = args.to.trim().toLowerCase();
+
+  // Suppression check: never send to a previously-unsubscribed address.
+  const { data: suppressed } = await supabase
+    .from("email_unsubscribes")
+    .select("email")
+    .eq("email", recipient)
+    .limit(1)
+    .maybeSingle();
+  if (suppressed) {
+    return { ok: false, reason: "unsubscribed" };
+  }
 
   // Dedup check: have we already sent this template to this session?
   if (!args.skipDedupe && args.quizSessionId) {
@@ -54,6 +72,19 @@ export async function sendEmail(args: SendArgs): Promise<{ ok: boolean; reason?:
   const fromAddr = process.env.EMAIL_FROM || FROM_DEFAULT;
   const replyTo = process.env.EMAIL_REPLY_TO || REPLY_TO_DEFAULT;
 
+  // Mint a per-recipient unsubscribe URL and substitute the {{unsubscribe_url}}
+  // placeholder that templates emit in their footer. Falls back to a mailto if
+  // EMAIL_TOKEN_SECRET isn't configured (templates still render, link still works).
+  const unsubToken = await mintUnsubscribeToken(recipient);
+  const unsubscribeUrl = unsubToken
+    ? `${UNSUB_BASE_URL}?token=${unsubToken}`
+    : `mailto:${REPLY_TO_DEFAULT}?subject=Unsubscribe`;
+  const html = args.html.replaceAll("{{unsubscribe_url}}", unsubscribeUrl);
+  const textWithSub = args.text.replaceAll("{{unsubscribe_url}}", unsubscribeUrl);
+  const text = textWithSub.includes(unsubscribeUrl)
+    ? textWithSub
+    : `${textWithSub}\n\n---\nUnsubscribe: ${unsubscribeUrl}`;
+
   let providerId: string | null = null;
   let providerStatus = "queued";
 
@@ -69,8 +100,16 @@ export async function sendEmail(args: SendArgs): Promise<{ ok: boolean; reason?:
         to: [args.to],
         reply_to: replyTo,
         subject: args.subject,
-        html: args.html,
-        text: args.text,
+        html,
+        text,
+        headers: {
+          // RFC 8058 one-click unsubscribe. Gmail + Apple Mail surface a native
+          // "Unsubscribe" affordance and POST to the URL on click.
+          "List-Unsubscribe": unsubToken
+            ? `<${unsubscribeUrl}>, <mailto:${REPLY_TO_DEFAULT}?subject=Unsubscribe>`
+            : `<mailto:${REPLY_TO_DEFAULT}?subject=Unsubscribe>`,
+          ...(unsubToken ? { "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } : {}),
+        },
         tags: [
           { name: "template", value: args.templateId },
           ...(args.quizSessionId ? [{ name: "qs", value: args.quizSessionId.slice(0, 30) }] : []),
@@ -102,6 +141,7 @@ export async function sendEmail(args: SendArgs): Promise<{ ok: boolean; reason?:
     provider_id: providerId,
     provider_status: providerStatus,
     sent_at: new Date().toISOString(),
+    metadata: args.metadata ?? {},
   });
 
   return { ok: providerStatus === "sent" };
