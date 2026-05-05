@@ -58,6 +58,11 @@ const COHORT_C: { slug: string; name: string; clips: Clip[] }[] = [
     name: "Weight shifts (standing)",
     clips: [{ id: "C-weight-shifts-DAV-W", cast: "David", angle: "W" }],
   },
+  {
+    slug: "tandem-stance",
+    name: "Tandem stance",
+    clips: [{ id: "C-tandem-stance-DAV-W", cast: "David", angle: "W" }],
+  },
 ];
 
 const COHORT_B: { slug: string; name: string; clips: Clip[] }[] = [
