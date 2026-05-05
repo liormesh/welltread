@@ -36,6 +36,7 @@ const COHORT_A: { slug: string; name: string; clips: Clip[] }[] = [
     clips: [
       { id: "A-closing-breath-MAR-M", cast: "Maria", angle: "M" },
       { id: "A-closing-breath-DAV-M", cast: "David", angle: "M" },
+      { id: "A-closing-breath-ELE-M", cast: "Eleanor", angle: "M" },
       { id: "A-closing-breath-JAM-M", cast: "James", angle: "M" },
     ],
   },

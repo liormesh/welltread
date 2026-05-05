@@ -52,15 +52,8 @@ function leadBoxBreath(lead: CastId): string {
   return `/videos/clips/A-box-breath-${CAST_TO_TOKEN[lead]}-W.mp4`;
 }
 
-/**
- * Closing-breath has Maria/David/James M-angle locked. Eleanor closing is
- * not yet generated. For Eleanor leads, fall back to her box-breath W —
- * same calm-breath visual register, soft-launch acceptable.
- */
+/** Closing-breath has all 4 cast × M-angle locked. */
 function leadClosingBreath(lead: CastId): string {
-  if (lead === "eleanor") {
-    return `/videos/clips/A-box-breath-ELE-W.mp4`;
-  }
   return `/videos/clips/A-closing-breath-${CAST_TO_TOKEN[lead]}-M.mp4`;
 }
 
