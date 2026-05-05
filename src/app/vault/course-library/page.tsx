@@ -49,6 +49,11 @@ const COHORT_C: { slug: string; name: string; clips: Clip[] }[] = [
     clips: [{ id: "C-cat-cow-seated-MAR-W", cast: "Maria", angle: "W" }],
   },
   {
+    slug: "cat-cow",
+    name: "Cat-cow (quadruped)",
+    clips: [{ id: "C-cat-cow-JAM-W", cast: "James", angle: "W" }],
+  },
+  {
     slug: "seated-figure-4",
     name: "Seated figure-4",
     clips: [{ id: "C-seated-figure-4-MAR-W", cast: "Maria", angle: "W" }],
