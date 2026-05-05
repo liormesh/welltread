@@ -143,6 +143,13 @@ export default function VaultIndex() {
             body="Visual language samples. Approve, reject, comment."
             highlight
           />
+          <Card
+            href="/vault/course-library"
+            eyebrow="17"
+            title="Course library"
+            body="Cast portraits, studio room references, and every locked course clip."
+            highlight
+          />
         </div>
       </section>
     </div>
