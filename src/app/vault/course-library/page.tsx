@@ -73,6 +73,11 @@ const COHORT_C: { slug: string; name: string; clips: Clip[] }[] = [
     name: "Single-leg balance (freestanding)",
     clips: [{ id: "C-single-leg-freestanding-DAV-W", cast: "David", angle: "W" }],
   },
+  {
+    slug: "sit-to-stand",
+    name: "Sit-to-stand (no hands)",
+    clips: [{ id: "C-sit-to-stand-ELE-W", cast: "Eleanor", angle: "W" }],
+  },
 ];
 
 const COHORT_B: { slug: string; name: string; clips: Clip[] }[] = [
