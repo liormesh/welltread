@@ -1,11 +1,16 @@
 /**
- * Hardcoded sample plan for the .app product layer (Phase 1, pre-content-pipeline).
+ * Hardcoded sample plan for the .app product layer.
  *
- * This stands in for what the assignment engine will produce once we have
- * the movement library + week templates + archetypes wired through Supabase.
+ * Session 1 ("Foundation Movement") is built dynamically against the user's
+ * resolved lead cast, so the intro/outro breath bookends always match the
+ * user demographic. The body of the session mixes all four cast members
+ * across the available locked clips.
  *
- * Replace with real DB-backed data in Phase 1B (after PT content lands).
+ * Replace with real DB-backed data in Phase 1B (after PT content +
+ * sessions schema lands).
  */
+
+import type { CastId } from "@/lib/visual/cast";
 
 export type Movement = {
   id: string;
@@ -22,7 +27,7 @@ export type Session = {
   title: string;
   subtitle: string;
   durationMinutes: number;
-  cast: "maria" | "david" | "eleanor" | "james";
+  cast: CastId;
   welcomeCopy: string;
   movements: Movement[];
 };
@@ -35,65 +40,123 @@ export type WeekDay = {
   status: "done" | "today" | "future" | "skipped";
 };
 
-// Stand-in video. Lior's Veo 3.1 test render of Maria doing a cat-cow.
-// Used across all 6 sample movements until the full library lands.
-// Self-hosted in /public/videos so it works on .app without CORS surprises.
-const PLACEHOLDER_VIDEO = "/videos/test/maria_cat_cow_v2.mp4";
+const CAST_TO_TOKEN: Record<CastId, "MAR" | "DAV" | "ELE" | "JAM"> = {
+  maria: "MAR",
+  david: "DAV",
+  eleanor: "ELE",
+  james: "JAM",
+};
 
-export const SAMPLE_SESSIONS: Record<string, Session> = {
-  "day-1": {
+/** Box-breath has all 4 cast × W+M locked. Pick the lead's W angle. */
+function leadBoxBreath(lead: CastId): string {
+  return `/videos/clips/A-box-breath-${CAST_TO_TOKEN[lead]}-W.mp4`;
+}
+
+/**
+ * Closing-breath has Maria/David/James M-angle locked. Eleanor closing is
+ * not yet generated. For Eleanor leads, fall back to her box-breath W —
+ * same calm-breath visual register, soft-launch acceptable.
+ */
+function leadClosingBreath(lead: CastId): string {
+  if (lead === "eleanor") {
+    return `/videos/clips/A-box-breath-ELE-W.mp4`;
+  }
+  return `/videos/clips/A-closing-breath-${CAST_TO_TOKEN[lead]}-M.mp4`;
+}
+
+/**
+ * Build Session 1 — Foundation Movement, ~12 min.
+ * Bookends in the lead cast; body mixes Maria/David across the available
+ * locked Cohort B + C clips.
+ */
+export function buildSessionOne(lead: CastId): Session {
+  const movements: Movement[] = [
+    {
+      id: "intro-breath",
+      name: "Box breath - opener",
+      cue: "Sit tall. In for 4, hold 4, out for 4. Find center.",
+      durationSeconds: 60,
+      videoUrl: leadBoxBreath(lead),
+    },
+    {
+      id: "body-scan",
+      name: "Body scan",
+      cue: "Lie on your back. Notice each part of the body, head to toes.",
+      durationSeconds: 90,
+      videoUrl: "/videos/clips/B-body-scan-DAV-W.mp4",
+    },
+    {
+      id: "cat-cow-seated",
+      name: "Seated cat-cow",
+      cue: "Hands on knees. Round and arch with the breath.",
+      durationSeconds: 90,
+      videoUrl: "/videos/clips/C-cat-cow-seated-MAR-W.mp4",
+    },
+    {
+      id: "seated-figure-4",
+      name: "Seated figure-4",
+      cue: "Cross one ankle over the opposite knee. Gentle hinge forward.",
+      durationSeconds: 90,
+      videoUrl: "/videos/clips/C-seated-figure-4-MAR-W.mp4",
+    },
+    {
+      id: "child-pose-supported",
+      name: "Supported child's pose",
+      cue: "Knees wide. Rest your forehead on hands or chair. Breathe.",
+      durationSeconds: 60,
+      videoUrl: "/videos/clips/B-child-pose-supported-MAR-W.mp4",
+    },
+    {
+      id: "standing-hip-hinge",
+      name: "Standing hip hinge",
+      cue: "Soft knees. Hinge from the hips, not the back.",
+      durationSeconds: 90,
+      videoUrl: "/videos/clips/B-standing-hip-hinge-ELE-W.mp4",
+    },
+    {
+      id: "weight-shifts",
+      name: "Standing weight shifts",
+      cue: "Feet wide. Shift slowly side to side. Stay tall.",
+      durationSeconds: 60,
+      videoUrl: "/videos/clips/C-weight-shifts-DAV-W.mp4",
+    },
+    {
+      id: "single-leg-supported",
+      name: "Single-leg balance (supported)",
+      cue: "Fingertips on a chair or wall. Lift one foot just an inch.",
+      durationSeconds: 90,
+      videoUrl: "/videos/clips/B-single-leg-supported-MAR-W.mp4",
+    },
+    {
+      id: "closing-breath",
+      name: "Closing breath",
+      cue: "One more round. Long inhale, longer exhale. You showed up.",
+      durationSeconds: 60,
+      videoUrl: leadClosingBreath(lead),
+    },
+  ];
+
+  const totalSeconds = movements.reduce((s, m) => s + m.durationSeconds, 0);
+
+  return {
     id: "day-1",
     number: 1,
     title: "Foundation Movement",
-    subtitle: "12 minutes - with Maria",
-    durationMinutes: 12,
-    cast: "maria",
+    subtitle: `${Math.round(totalSeconds / 60)} minutes`,
+    durationMinutes: Math.round(totalSeconds / 60),
+    cast: lead,
     welcomeCopy: "Day 1 sets the foundation. Just show up.",
-    movements: [
-      {
-        id: "warm-breath",
-        name: "Seated breath",
-        cue: "Sit comfortably. Three deep breaths.",
-        durationSeconds: 45,
-        videoUrl: PLACEHOLDER_VIDEO,
-      },
-      {
-        id: "neck-rolls",
-        name: "Gentle neck rolls",
-        cue: "Slow circles. Stop if anything pinches.",
-        durationSeconds: 60,
-        videoUrl: PLACEHOLDER_VIDEO,
-      },
-      {
-        id: "cat-cow",
-        name: "Cat-cow",
-        cue: "Round your back gently. Soft spine.",
-        durationSeconds: 90,
-        videoUrl: PLACEHOLDER_VIDEO,
-      },
-      {
-        id: "hip-openers",
-        name: "Seated hip openers",
-        cue: "Cross one ankle. Hinge forward gently.",
-        durationSeconds: 90,
-        videoUrl: PLACEHOLDER_VIDEO,
-      },
-      {
-        id: "standing-balance",
-        name: "Standing balance basics",
-        cue: "Chair within reach. One foot lifted slightly.",
-        durationSeconds: 120,
-        videoUrl: PLACEHOLDER_VIDEO,
-      },
-      {
-        id: "cooldown-breath",
-        name: "Closing breath",
-        cue: "Three deep breaths. You're done.",
-        durationSeconds: 45,
-        videoUrl: PLACEHOLDER_VIDEO,
-      },
-    ],
-  },
+    movements,
+  };
+}
+
+/**
+ * Static fallback session (Maria as lead) for any code path that doesn't
+ * yet thread the user's lead cast through. Keep the day-1 key alive so
+ * /app/session/day-1 still resolves to a playable session.
+ */
+export const SAMPLE_SESSIONS: Record<string, Session> = {
+  "day-1": buildSessionOne("maria"),
 };
 
 export const SAMPLE_WEEK: WeekDay[] = [
@@ -116,10 +179,6 @@ export const SAMPLE_USER = {
   weekThemeBody: "Building range so the strength work has somewhere to go.",
 };
 
-/**
- * Cast portrait + display name lookup, for /app screens that show
- * the session's guide.
- */
 export const CAST_LOOKUP: Record<
   Session["cast"],
   { name: string; image: string }

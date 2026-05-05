@@ -14,7 +14,8 @@
 import { createSupabaseRouteClient } from "@/lib/supabase/auth";
 import { castForSession, type CastMember } from "@/lib/visual/cast";
 import type { Niche } from "@/lib/quiz/definition";
-import { SAMPLE_SESSIONS, type Session } from "@/lib/app/sample-plan";
+import { buildSessionOne, type Session } from "@/lib/app/sample-plan";
+import type { CastId } from "@/lib/visual/cast";
 
 export type TodayContext = {
   /** True if the resolution succeeded - if false, /app/today should fall back to sample data. */
@@ -94,17 +95,16 @@ export async function resolveTodayForUser(): Promise<TodayContext | null> {
   const dayNumber = diffDays;
   const weekNumber = Math.ceil(diffDays / 7);
 
-  // For Phase 1, all sessions point at the sample "day-1" content.
-  // Once the content pipeline lands, we'll resolve a real session by
-  // looking up plan_data.archetype + week + day in the sessions table.
-  const session = SAMPLE_SESSIONS["day-1"];
-
   const niche: Niche =
     plan.niche === "seniors" || plan.niche === "posture"
       ? plan.niche
       : "general";
 
   const cast = castForSession(niche, dayNumber);
+
+  // Build session 1 with the resolved lead cast for matched bookends.
+  // All days currently route to session 1 until more sessions ship.
+  const session = buildSessionOne(cast.id as CastId);
 
   const todayStr = today.toISOString().slice(0, 10);
   const completedToday = completions?.some((c) => c.date === todayStr) ?? false;
